@@ -184,3 +184,22 @@ a { color: inherit; }
     color: #ffb4b4;
     font-size: 0.9rem;
 }
+
+.listMain {
+    min-width: 240px;
+}
+
+.actionsRow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+a.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}

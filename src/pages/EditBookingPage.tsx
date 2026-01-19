@@ -54,18 +54,18 @@ export function EditBookingPage() {
         };
 
         updateBooking(updated);
-        nav("/dashboard");
+        nav(`/bookings/${booking.id}`);
     };
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = form;
 
     return (
         <div className="container stack">
-            <h1>Edit booking</h1>
+            <h1>Upravit rezervaci</h1>
 
             <section className="card stack">
                 <div className="muted">
-                    Trip: <strong>{trip?.title ?? booking.tripId}</strong>
+                    Plavba: <strong>{trip?.title ?? booking.tripId}</strong>
                 </div>
 
                 <form className="stack" onSubmit={handleSubmit(onSubmit)}>
@@ -88,8 +88,8 @@ export function EditBookingPage() {
                     </label>
 
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        <button className="btn" type="submit" disabled={isSubmitting}>Save</button>
-                        <Link to="/dashboard">Cancel</Link>
+                        <button className="btn" type="submit" disabled={isSubmitting}>Uložit</button>
+                        <Link to="/dashboard">Zrušit</Link>
                     </div>
                 </form>
             </section>

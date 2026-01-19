@@ -21,34 +21,34 @@ export function Header() {
 
                 <nav className="nav">
                     <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>
-                        Discover
+                        Domů
                     </NavLink>
 
                     <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
-                        Dashboard
+                        Můj přehled
                     </NavLink>
 
-                    {/* ✅ VŽDY viditelné */}
                     <NavLink to="/offers/new" className={({ isActive }) => (isActive ? "active" : "")}>
-                        Create offer
+                        Vytvořit nabídku
                     </NavLink>
 
                     {user ? (
                         <>
-              <span className="muted" style={{ padding: "6px 10px" }}>
-                {user.name} ({user.role})
-              </span>
-                            <button className="btn" type="button" onClick={handleLogout}>
-                                Logout
-                            </button>
+                    <NavLink className="nav" to="/me">
+                        {user.name} ({user.role})
+                    </NavLink>
+
+                    <button className="btn" type="button" onClick={handleLogout}>
+                        Odhlášení
+                    </button>
                         </>
                     ) : (
                         <>
                             <NavLink to="/login" className={({ isActive }) => (isActive ? "active" : "")}>
-                                Login
+                                Přihlášení
                             </NavLink>
                             <NavLink to="/register" className={({ isActive }) => (isActive ? "active" : "")}>
-                                Register
+                                Registrace
                             </NavLink>
                         </>
                     )}

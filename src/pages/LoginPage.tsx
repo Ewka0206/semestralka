@@ -28,6 +28,7 @@ export function LoginPage() {
     const onSubmit = (values: LoginForm) => {
         const normalizedEmail = values.email.trim().toLowerCase();
         const existing = findUserByEmail(normalizedEmail);
+        const now = new Date().toString();
 
         const user: User =
             existing ??
@@ -38,7 +39,8 @@ export function LoginPage() {
                     password: values.password,
                     name: normalizedEmail.split("@")[0] || "User",
                     role: "crew",
-                    createdAt: new Date().toISOString(),
+                    createdAt: now,
+                    updatedAt: now
                 };
                 addUser(created);
                 return created;
@@ -55,7 +57,7 @@ export function LoginPage() {
 
     return (
         <div className="container stack">
-            <h1>Login</h1>
+            <h1>Přihlášení</h1>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
@@ -65,17 +67,17 @@ export function LoginPage() {
                 </label>
 
                 <label className="field">
-                    <span>Password</span>
+                    <span>Heslo</span>
                     <input type="password" {...register("password")} />
                     <FormError error={errors.password} />
                 </label>
 
                 <button className="btn" type="submit" disabled={isSubmitting}>
-                    Login
+                    Přihlásit se
                 </button>
 
                 <p className="muted">
-                    Chceš radši plnou registraci? <Link to="/register">Register</Link>
+                    Ještě nemáš účet? Klikni zde:  <Link to="/register">Registrace</Link>
                 </p>
             </form>
         </div>

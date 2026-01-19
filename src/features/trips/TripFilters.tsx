@@ -1,7 +1,8 @@
 import type { TripType } from "./types.ts";
+import { tripTypeLabels } from "./i18n";
 import type { TripFiltersState } from "./utils.ts";
 
-const types: Array<TripType | "Any"> = ["Any", "Training", "Adventure", "Relax", "Delivery"];
+const types: Array<TripType | "Any"> = ["Any", "Training", "Adventure", "Relax"];
 
 type Props = {
     value: TripFiltersState;
@@ -14,30 +15,32 @@ export function TripFilters({ value, onChange, onReset }: Props) {
         <div className="card stack">
             <div className="grid2">
                 <div className="field">
-                    <label>Search</label>
+                    <label>Destinace</label>
                     <input
                         value={value.q}
                         onChange={(e) => onChange({ ...value, q: e.target.value })}
-                        placeholder="Korfu / Greece / training…"
+                        placeholder="Korfu / Řecko / trénink…"
                     />
                 </div>
 
                 <div className="field">
-                    <label>Type</label>
+                    <label>Typ plavby</label>
                     <select
                         value={value.type}
-                        onChange={(e) => onChange({ ...value, type: e.target.value as TripFiltersState["type"] })}
+                        onChange={(e) =>
+                            onChange({ ...value, type: e.target.value as TripFiltersState["type"] })
+                        }
                     >
                         {types.map((t) => (
                             <option key={t} value={t}>
-                                {t === "Any" ? "Any" : t}
+                                {t === "Any" ? "Cokoliv" : tripTypeLabels[t]}
                             </option>
                         ))}
                     </select>
                 </div>
 
                 <div className="field">
-                    <label>Date from</label>
+                    <label>Datum od</label>
                     <input
                         type="date"
                         value={value.dateFrom}
@@ -46,7 +49,7 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                 </div>
 
                 <div className="field">
-                    <label>Date to</label>
+                    <label>Datum do</label>
                     <input
                         type="date"
                         value={value.dateTo}
@@ -55,7 +58,7 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                 </div>
 
                 <div className="field">
-                    <label>Max price (CZK)</label>
+                    <label>Maximální cena (CZK)</label>
                     <input
                         type="number"
                         min={0}
@@ -66,14 +69,14 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                                 maxPriceCzk: e.target.value === "" ? null : Number(e.target.value),
                             })
                         }
-                        placeholder="e.g. 18000"
+                        placeholder="např. 18000"
                     />
                 </div>
 
                 <div className="field actionsRow">
                     <label>&nbsp;</label>
                     <button className="btn" type="button" onClick={onReset}>
-                        Reset
+                        Vymazat filtry
                     </button>
                 </div>
             </div>

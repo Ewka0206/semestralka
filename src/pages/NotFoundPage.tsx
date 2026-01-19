@@ -5,7 +5,7 @@ export function NotFoundPage() {
         <div className="container stack">
             <h1>404</h1>
             <p className="muted">Tahle stránka neexistuje.</p>
-            <Link to="/">Zpět na Discover</Link>
+            <Link to="/">Zpět na Domovskou stránku</Link>
         </div>
     );
 }

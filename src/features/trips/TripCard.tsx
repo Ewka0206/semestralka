@@ -24,24 +24,24 @@ export function TripCard({ trip }: Props) {
                 </div>
 
                 <div className="pill">
-                    from <b>{trip.priceCzk.toLocaleString("cs-CZ")} Kč</b>
+                    cena <b>{trip.priceCzk.toLocaleString("cs-CZ")} Kč</b>
                 </div>
             </div>
 
             <div className="tripMeta">
                 <div>
-                    <span className="muted">Date</span>
+                    <span className="muted">Termín</span>
                     <div>{formatDateRange(trip.startDate, trip.endDate)}</div>
                 </div>
                 <div>
-                    <span className="muted">Availability</span>
+                    <span className="muted">Volná místa</span>
                     <div>
                         {free} free / {trip.capacity}
                     </div>
                 </div>
                 <div>
-                    <span className="muted">Skipper</span>
-                    <div>{trip.skipperIncluded ? "Included" : "No"}</div>
+                    <span className="muted">Kapitán v ceně</span>
+                    <div>{trip.skipperIncluded ? "Ano" : "Ne"}</div>
                 </div>
             </div>
 

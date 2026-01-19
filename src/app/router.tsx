@@ -10,6 +10,9 @@ import { NotFoundPage } from "../pages/NotFoundPage";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 import { EditOfferPage } from "../pages/EditOfferPage";
 import { EditBookingPage } from "../pages/EditBookingPage";
+import { BookingDetailPage } from "../pages/BookingDetailPage";
+import { UserDetailPage } from "../pages/UserDetailPage";
+import { EditUserPage } from "../pages/EditUserPage";
 
 export const router = createBrowserRouter([
     {
@@ -31,8 +34,11 @@ export const router = createBrowserRouter([
                 children: [
                     { path: "offers/new", element: <CreateOfferPage /> },
                     { path: "offers/:tripId/edit", element: <EditOfferPage /> },
+                    { path: "bookings/:bookingId", element: <BookingDetailPage /> },
                     { path: "bookings/:bookingId/edit", element: <EditBookingPage /> },
                     { path: "dashboard", element: <DashboardPage /> },
+                    { path: "me", element: <UserDetailPage /> },
+                    { path: "me/edit", element: <EditUserPage /> },
                 ],
             },
 

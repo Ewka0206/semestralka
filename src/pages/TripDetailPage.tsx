@@ -32,7 +32,6 @@ export function TripDetailPage() {
     }, [tripId]);
 
     const trip = memo.trip;
-    const isUserTrip = memo.isUserTrip;
 
     const user = getCurrentUser();
     const isOwnOffer = Boolean(user && trip?.ownerUserId && trip.ownerUserId === user.id);
@@ -55,13 +54,13 @@ export function TripDetailPage() {
             <div className="container stack">
                 <h1>Trip not found</h1>
                 <p className="muted">Plavba „{tripId}“ neexistuje.</p>
-                <Link to="/">← Zpět na Discover</Link>
+                <Link to="/">← Zpět na Domovskou stránku</Link>
             </div>
         );
     }
 
     function handleDelete(tripIdToDelete: string) {
-        if (!isUserTrip) return;
+        if (!isOwnOffer) return;
         const ok = confirm("Opravdu smazat tuto nabídku?");
         if (!ok) return;
 
@@ -99,10 +98,7 @@ export function TripDetailPage() {
             </header>
 
             <section className="card stack">
-                <p>
-                    <strong>{trip.priceCzk.toLocaleString()} Kč</strong> / osoba · kapacita{" "}
-                    <strong>{trip.capacity}</strong>
-                </p>
+
                 <p className="muted">{trip.description}</p>
 
                 {trip.highlights?.length ? (
@@ -113,10 +109,20 @@ export function TripDetailPage() {
                     </ul>
                 ) : null}
 
-                {isUserTrip && (
-                    <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
-                        Delete offer
-                    </button>
+                <p>
+                    Počet volných míst{" "} <strong>{trip.capacity}</strong>  ·   Cena <strong>{trip.priceCzk.toLocaleString()} Kč</strong> / osoba
+                </p>
+
+                {isOwnOffer && (
+                    <div className="actionsRow">
+                        <Link className="btn" to={`/offers/${trip.id}/edit`}>
+                            Upravit plavbu
+                        </Link>
+
+                        <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
+                            Smazat plavbu
+                        </button>
+                    </div>
                 )}
             </section>
 

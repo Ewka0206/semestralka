@@ -18,7 +18,7 @@ export const tripsMock: Trip[] = [
     },
     {
         id: "saronic-2026-05",
-        title: "Saronický záliv – plachetní trénink a manévry",
+        title: "Saronský záliv – plachetní trénink a manévry",
         location: "Saronic Gulf",
         country: "Greece",
         type: "Training",

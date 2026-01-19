@@ -92,30 +92,30 @@ export function EditOfferPage() {
 
     return (
         <div className="container stack">
-            <h1>Edit offer</h1>
+            <h1>Upravit nabídku</h1>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
-                    <span>Title</span>
+                    <span>Název</span>
                     <input {...register("title")} />
                     <FormError error={errors.title} />
                 </label>
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Location</span>
+                        <span>Destinace</span>
                         <input {...register("location")} />
                         <FormError error={errors.location} />
                     </label>
 
                     <label className="field">
-                        <span>Country</span>
+                        <span>Stát</span>
                         <input {...register("country")} />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Type</span>
+                    <span>Typ</span>
                     <select {...register("type")}>
                         {tripTypes.map((t) => (
                             <option key={t} value={t}>
@@ -128,13 +128,13 @@ export function EditOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Start date</span>
+                        <span>Datum od</span>
                         <input type="date" {...register("startDate")} />
                         <FormError error={errors.startDate} />
                     </label>
 
                     <label className="field">
-                        <span>End date</span>
+                        <span>Datum do</span>
                         <input type="date" {...register("endDate")} />
                         <FormError error={errors.endDate} />
                     </label>
@@ -142,33 +142,33 @@ export function EditOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Price (CZK)</span>
+                        <span>Cena (CZK)</span>
                         <input type="number" min={0} {...register("priceCzk")} />
                         <FormError error={errors.priceCzk} />
                     </label>
 
                     <label className="field">
-                        <span>Capacity</span>
+                        <span>Počet míst</span>
                         <input type="number" min={1} {...register("capacity")} />
                         <FormError error={errors.capacity} />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Highlights (1 per line)</span>
-                    <textarea rows={4} {...register("highlightsText")} />
+                    <span>Detail</span>
+                    <textarea rows={4} {...register("description")} />
                 </label>
 
                 <label className="field">
-                    <span>Description</span>
-                    <textarea rows={4} {...register("description")} />
+                    <span>Souhrn</span>
+                    <textarea rows={4} {...register("highlightsText")} />
                 </label>
 
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <button className="btn" type="submit" disabled={isSubmitting}>
-                        Save changes
+                        Uložit
                     </button>
-                    <Link to={`/trips/${trip.id}`}>Cancel</Link>
+                    <Link to={`/trips/${trip.id}`}>Zrušit</Link>
                 </div>
             </form>
         </div>

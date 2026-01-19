@@ -19,7 +19,7 @@ export function HomePage() {
 
     return (
         <div className="container stack">
-            <h1>Discover trips</h1>
+            <h1>Objev zážitky</h1>
 
             <TripFilters
                 value={filters}

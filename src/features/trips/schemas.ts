@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const tripTypes = ["Training", "Adventure", "Relax", "Delivery"] as const;
+export const tripTypes = ["Training", "Adventure", "Relax"] as const;
 
 export const createOfferSchema = z
     .object({

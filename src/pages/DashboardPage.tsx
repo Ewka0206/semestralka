@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { getBookings } from "../features/bookings/repo";
 import { tripsMock } from "../data/tripsMock";
 import { deleteUserTrip, getUserTrips } from "../features/trips/repo";
 import { getCurrentUser } from "../features/auth/repo";
+import { deleteBooking, getBookings } from "../features/bookings/repo";
 
 export function DashboardPage() {
     const bookings = getBookings();
@@ -16,10 +16,16 @@ export function DashboardPage() {
         // jednoduché řešení bez contextu: reload stránky, aby se seznam aktualizoval
         window.location.reload();
     }
+    function handleCancelBooking(bookingId: string) {
+        const ok = confirm("Opravdu chceš zrušit rezervaci?");
+        if (!ok) return;
+        deleteBooking(bookingId);
+        window.location.reload();
+    }
 
     return (
         <div className="container stack">
-            <h1>Dashboard</h1>
+            <h1>Můj přehled</h1>
 
             {/* ========================= */}
             {/* MOJE REZERVACE */}
@@ -29,7 +35,7 @@ export function DashboardPage() {
 
                 {bookings.length === 0 ? (
                     <p className="muted">
-                        Zatím nemáš žádné rezervace. Vyber si něco na <Link to="/">Discover</Link>.
+                        Zatím nemáš žádné rezervace. Vyber si něco na <Link to="/">Přehled nabídek</Link>.
                     </p>
                 ) : (
                     <ul className="list">
@@ -40,7 +46,7 @@ export function DashboardPage() {
 
                             return (
                                 <li key={b.id} className="listItem">
-                                    <div>
+                                    <div className ="listMain">
                                         <div>
                                             <strong>{trip?.title ?? b.tripId}</strong>
                                         </div>
@@ -52,8 +58,14 @@ export function DashboardPage() {
                                         </div>
                                     </div>
 
-                                    <Link to={`/trips/${b.tripId}`}>Detail</Link>
-                                    <Link to={`/bookings/${b.id}/edit`}>Edit</Link>
+                                    <div className="actionsRow">
+                                        <Link className="btn" to={`/trips/${b.tripId}`}>Detail plavby</Link>
+                                        <Link className="btn" to={`/bookings/${b.id}`}>Detail rezervace</Link>
+                                        <Link className="btn" to={`/bookings/${b.id}/edit`}>Upravit</Link>
+                                        <button className="btn" type="button" onClick={() => handleCancelBooking(b.id)}>
+                                            Zrušit
+                                        </button>
+                                    </div>
                                 </li>
                             );
                         })}
@@ -66,21 +78,21 @@ export function DashboardPage() {
             {/* ========================= */}
             <section className="card stack">
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <h2>Moje nabídky</h2>
+                    <h2>Moje plavby</h2>
                     <Link className="btn" to="/offers/new">
-                        + Create offer
+                        + Nová plavba
                     </Link>
                 </div>
 
                 {myOffers.length === 0 ? (
                     <p className="muted">
-                        Zatím nemáš žádné nabídky. Vytvoř si ji přes <Link to="/offers/new">Create offer</Link>.
+                        Zatím nemáš žádnou plavbu. Vytvoř si ji přes <Link to="/offers/new">Nová plavba</Link>.
                     </p>
                 ) : (
                     <ul className="list">
                         {myOffers.map((t) => (
                             <li key={t.id} className="listItem">
-                                <div>
+                                <div className = "listMain" >
                                     <div>
                                         <strong>{t.title}</strong>
                                     </div>
@@ -91,11 +103,11 @@ export function DashboardPage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                                    <Link to={`/trips/${t.id}`}>Detail</Link>
-                                    <Link to={`/offers/${t.id}/edit`}>Edit</Link>
+                                <div className="actionsRow">
+                                    <Link className="btn" to={`/trips/${t.id}`}>Detail plavby</Link>
+                                    <Link className="btn" to={`/offers/${t.id}/edit`}>Upravit</Link>
                                     <button className="btn" type="button" onClick={() => handleDeleteOffer(t.id)}>
-                                        Delete
+                                        Zrušit
                                     </button>
                                 </div>
                             </li>

@@ -41,6 +41,29 @@ export function getCurrentUser(): User | null {
     return users.find((u) => u.id === session.userId) ?? null;
 }
 
+export function updateCurrentUser(patch: Partial<User>): User | null {
+    const session = getSession();
+    if (!session) return null;
+
+    const users = getUsers();
+    const idx = users.findIndex((u) => u.id === session.userId);
+    if (idx === -1) return null;
+
+    const curr = users[idx];
+
+    const next: User = {
+        ...curr,
+        ...patch,
+        updatedAt: new Date().toISOString(),
+    };
+
+    const nextUsers = [...users];
+    nextUsers[idx] = next;
+    saveUsers(nextUsers);
+
+    return next;
+}
+
 export function logout(): void {
     setSession(null);
 }

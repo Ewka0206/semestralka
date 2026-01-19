@@ -7,6 +7,7 @@ import { addUserTrip } from "../features/trips/repo";
 import { createOfferSchema, tripTypes, type CreateOfferForm } from "../features/trips/schemas";
 import { FormError } from "../components/forms/FormError";
 import { getCurrentUser } from "../features/auth/repo";
+import { tripTypeLabels } from "../features/trips/i18n";
 
 function uid(): string {
     return crypto.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -26,7 +27,7 @@ export function CreateOfferPage() {
             title: "",
             location: "",
             country: "",
-            type: "Training",
+            type: "Relax",
             startDate: "",
             endDate: "",
             priceCzk: 17000,
@@ -44,9 +45,7 @@ export function CreateOfferPage() {
             .filter(Boolean);
 
         const highlights =
-            parsedHighlights.length > 0
-                ? parsedHighlights
-                : ["New offer", "Custom route", "Friendly crew"];
+            parsedHighlights.length > 0 ? parsedHighlights : ["New offer", "Custom route", "Friendly crew"];
 
         const trip: Trip = {
             id: uid(),
@@ -73,34 +72,34 @@ export function CreateOfferPage() {
 
     return (
         <div className="container stack">
-            <h1>Create offer</h1>
+            <h1>Vytvořit nabídku</h1>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
-                    <span>Title</span>
+                    <span>Název</span>
                     <input {...register("title")} />
                     <FormError error={errors.title} />
                 </label>
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Location</span>
+                        <span>Destinace</span>
                         <input {...register("location")} />
                         <FormError error={errors.location} />
                     </label>
 
                     <label className="field">
-                        <span>Country</span>
-                        <input {...register("country")} placeholder="Greece" />
+                        <span>Stát</span>
+                        <input {...register("country")} placeholder="Řecko" />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Type</span>
+                    <span>Typ</span>
                     <select {...register("type")}>
                         {tripTypes.map((t) => (
                             <option key={t} value={t}>
-                                {t}
+                                {tripTypeLabels[t]} {}
                             </option>
                         ))}
                     </select>
@@ -109,13 +108,13 @@ export function CreateOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Start date</span>
+                        <span>Datum od</span>
                         <input type="date" {...register("startDate")} />
                         <FormError error={errors.startDate} />
                     </label>
 
                     <label className="field">
-                        <span>End date</span>
+                        <span>Datum do</span>
                         <input type="date" {...register("endDate")} />
                         <FormError error={errors.endDate} />
                     </label>
@@ -123,30 +122,30 @@ export function CreateOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Price (CZK)</span>
+                        <span>Cena (CZK)</span>
                         <input type="number" min={0} {...register("priceCzk")} />
                         <FormError error={errors.priceCzk} />
                     </label>
 
                     <label className="field">
-                        <span>Capacity</span>
+                        <span>Počet míst</span>
                         <input type="number" min={1} {...register("capacity")} />
                         <FormError error={errors.capacity} />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Highlights (1 per line)</span>
-                    <textarea rows={4} {...register("highlightsText")} />
-                </label>
-
-                <label className="field">
-                    <span>Description</span>
+                    <span>Detail</span>
                     <textarea rows={4} {...register("description")} />
                 </label>
 
+                <label className="field">
+                    <span>Souhrn (1 bod na řádek)</span>
+                    <textarea rows={4} {...register("highlightsText")} />
+                </label>
+
                 <button className="btn" type="submit" disabled={isSubmitting}>
-                    Save offer
+                    Uložit
                 </button>
             </form>
         </div>

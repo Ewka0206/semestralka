@@ -31,6 +31,7 @@ export function RegisterPage() {
             setError("email", { type: "manual", message: "Uživatel s tímto emailem už existuje." });
             return;
         }
+        const now = new Date().toISOString();
 
         const user: User = {
             id: uid(),
@@ -38,7 +39,8 @@ export function RegisterPage() {
             email: normalizedEmail,
             password: values.password,
             role: values.role,
-            createdAt: new Date().toISOString(),
+            createdAt: now,
+            updatedAt: now,
         };
 
         addUser(user);
@@ -48,11 +50,11 @@ export function RegisterPage() {
 
     return (
         <div className="container stack">
-            <h1>Register</h1>
+            <h1>Registrace</h1>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
-                    <span>Name</span>
+                    <span>Jméno</span>
                     <input {...register("name")} />
                     <FormError error={errors.name} />
                 </label>
@@ -66,24 +68,24 @@ export function RegisterPage() {
                 <label className="field">
                     <span>Role</span>
                     <select {...register("role")}>
-                        <option value="crew">Crew</option>
-                        <option value="captain">Captain</option>
+                        <option value="crew">Člen posádky</option>
+                        <option value="captain">Kapitán</option>
                     </select>
                     <FormError error={errors.role as any} />
                 </label>
 
                 <label className="field">
-                    <span>Password</span>
+                    <span>Heslo</span>
                     <input type="password" {...register("password")} />
                     <FormError error={errors.password} />
                 </label>
 
                 <button className="btn" type="submit" disabled={isSubmitting}>
-                    Create account
+                    Vytvořit účet
                 </button>
 
                 <p className="muted">
-                    Už máš účet? <Link to="/login">Login</Link>
+                    Už máš účet? Přihlas se zde:  <Link to="/login">Přihlásit se</Link>
                 </p>
             </form>
         </div>
