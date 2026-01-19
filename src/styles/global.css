@@ -168,3 +168,7 @@ a { color: inherit; }
     color: inherit;
     resize: vertical;
 }
+.fieldError {
+    color: #ffb4b4;
+    font-size: 0.9rem;
+}
