@@ -3,6 +3,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { tripsMock } from "../data/tripsMock";
 import { addBooking } from "../features/bookings/repo";
 import { deleteUserTrip, getUserTrips } from "../features/trips/repo";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { bookingSchema, type BookingForm } from "../features/bookings/schemas";
+import { FormError } from "../components/forms/FormError";
 import type { Booking } from "../features/bookings/types";
 
 function uid(): string {
@@ -27,10 +31,18 @@ export function TripDetailPage() {
     const trip = memo.trip;
     const isUserTrip = memo.isUserTrip;
 
-    const [seats, setSeats] = useState(1);
-    const [contactName, setContactName] = useState("");
-    const [contactEmail, setContactEmail] = useState("");
     const [done, setDone] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors, isSubmitting },
+    } = useForm<BookingForm>({
+        resolver: zodResolver(bookingSchema),
+        defaultValues: { seats: 1, contactName: "", contactEmail: "" },
+        mode: "onBlur",
+    });
+
 
     if (!trip) {
         return (
@@ -51,23 +63,24 @@ export function TripDetailPage() {
         nav("/");
     }
 
-    function handleBook() {
-        if (!contactName.trim()) return alert("Vyplň jméno.");
-        if (!contactEmail.includes("@")) return alert("Zadej validní email.");
-        if (seats < 1 || seats > trip.capacity) return alert("Počet míst je mimo rozsah.");
+    const onBook = (values: BookingForm) => {
+        if (values.seats > trip.capacity) {
+            setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
+            return;
+        }
 
         const booking: Booking = {
             id: uid(),
             tripId: trip.id,
             createdAt: new Date().toISOString(),
-            seats,
-            contactName: contactName.trim(),
-            contactEmail: contactEmail.trim(),
+            seats: values.seats,
+            contactName: values.contactName.trim(),
+            contactEmail: values.contactEmail.trim(),
         };
 
         addBooking(booking);
         setDone(true);
-    }
+    };
 
     return (
         <div className="container stack">
@@ -110,40 +123,29 @@ export function TripDetailPage() {
                         <Link to="/dashboard">Jít na Dashboard</Link>
                     </div>
                 ) : (
-                    <>
+                    <form className="stack" onSubmit={handleSubmit(onBook)}>
                         <label className="field">
                             <span>Jméno</span>
-                            <input
-                                value={contactName}
-                                onChange={(e) => setContactName(e.target.value)}
-                                placeholder="Např. Efka"
-                            />
+                            <input {...register("contactName")} placeholder="Např. Efka" />
+                            <FormError error={errors.contactName} />
                         </label>
 
                         <label className="field">
                             <span>Email</span>
-                            <input
-                                value={contactEmail}
-                                onChange={(e) => setContactEmail(e.target.value)}
-                                placeholder="efka@email.cz"
-                            />
+                            <input {...register("contactEmail")} placeholder="efka@email.cz" />
+                            <FormError error={errors.contactEmail} />
                         </label>
 
                         <label className="field">
                             <span>Počet míst</span>
-                            <input
-                                type="number"
-                                min={1}
-                                max={trip.capacity}
-                                value={seats}
-                                onChange={(e) => setSeats(Number(e.target.value))}
-                            />
+                            <input type="number" min={1} max={trip.capacity} {...register("seats")} />
+                            <FormError error={errors.seats} />
                         </label>
 
-                        <button className="btn" type="button" onClick={handleBook}>
+                        <button className="btn" type="submit" disabled={isSubmitting}>
                             Rezervovat
                         </button>
-                    </>
+                    </form>
                 )}
             </section>
 
