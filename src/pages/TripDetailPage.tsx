@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { tripsMock } from "../data/tripsMock";
 import { addBooking } from "../features/bookings/repo";
-import { getUserTrips } from "../features/trips/repo";
+import { deleteUserTrip, getUserTrips } from "../features/trips/repo";
 import type { Booking } from "../features/bookings/types";
 
 function uid(): string {
@@ -11,11 +11,21 @@ function uid(): string {
 
 export function TripDetailPage() {
     const { tripId } = useParams();
+    const nav = useNavigate();
 
-    const trip = useMemo(() => {
-        const all = [...getUserTrips(), ...tripsMock];
-        return all.find((t) => t.id === tripId);
+    const memo = useMemo(() => {
+        const userTrips = getUserTrips();
+        const user = userTrips.find((t) => t.id === tripId);
+        if (user) return { trip: user, isUserTrip: true };
+
+        const mock = tripsMock.find((t) => t.id === tripId);
+        if (mock) return { trip: mock, isUserTrip: false };
+
+        return { trip: null, isUserTrip: false };
     }, [tripId]);
+
+    const trip = memo.trip;
+    const isUserTrip = memo.isUserTrip;
 
     const [seats, setSeats] = useState(1);
     const [contactName, setContactName] = useState("");
@@ -30,6 +40,15 @@ export function TripDetailPage() {
                 <Link to="/">← Zpět na Discover</Link>
             </div>
         );
+    }
+
+    function handleDelete() {
+        if (!isUserTrip) return;
+        const ok = confirm("Opravdu smazat tuto nabídku?");
+        if (!ok) return;
+
+        deleteUserTrip(trip.id);
+        nav("/");
     }
 
     function handleBook() {
@@ -55,7 +74,8 @@ export function TripDetailPage() {
             <header className="stack">
                 <h1>{trip.title}</h1>
                 <p className="muted">
-                    {trip.location} · {trip.startDate} – {trip.endDate} · {trip.type}
+                    {trip.location}
+                    {trip.country ? ` · ${trip.country}` : ""} · {trip.startDate} – {trip.endDate} · {trip.type}
                 </p>
             </header>
 
@@ -65,6 +85,20 @@ export function TripDetailPage() {
                     <strong>{trip.capacity}</strong>
                 </p>
                 <p className="muted">{trip.description}</p>
+
+                {trip.highlights?.length ? (
+                    <ul className="tripHighlights">
+                        {trip.highlights.slice(0, 6).map((h) => (
+                            <li key={h}>{h}</li>
+                        ))}
+                    </ul>
+                ) : null}
+
+                {isUserTrip && (
+                    <button className="btn" type="button" onClick={handleDelete}>
+                        Delete offer
+                    </button>
+                )}
             </section>
 
             <section className="card stack">
