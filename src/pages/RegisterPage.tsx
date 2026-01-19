@@ -1,7 +1,11 @@
-import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import type { User, UserRole } from "../features/auth/types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { registerSchema, type RegisterForm } from "../features/auth/schemas";
 import { addUser, findUserByEmail, setSession } from "../features/auth/repo";
+import type { User } from "../features/auth/types";
+import { FormError } from "../components/forms/FormError";
 
 function uid(): string {
     return crypto.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -10,67 +14,78 @@ function uid(): string {
 export function RegisterPage() {
     const nav = useNavigate();
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [role, setRole] = useState<UserRole>("crew");
-    const [password, setPassword] = useState("");
+    const {
+        register,
+        handleSubmit,
+        setError,
+        formState: { errors, isSubmitting },
+    } = useForm<RegisterForm>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: { name: "", email: "", password: "", role: "crew" },
+        mode: "onBlur",
+    });
 
-    function submit() {
-        if (!name.trim()) return alert("Vyplň jméno.");
-        if (!email.includes("@")) return alert("Zadej validní email.");
-        if (password.length < 4) return alert("Heslo aspoň 4 znaky.");
-        if (findUserByEmail(email)) return alert("Uživatel s tímto emailem už existuje.");
+    const onSubmit = (values: RegisterForm) => {
+        const normalizedEmail = values.email.trim().toLowerCase();
+        if (findUserByEmail(normalizedEmail)) {
+            setError("email", { type: "manual", message: "Uživatel s tímto emailem už existuje." });
+            return;
+        }
 
         const user: User = {
             id: uid(),
-            name: name.trim(),
-            email: email.trim(),
-            password,
-            role,
+            name: values.name.trim(),
+            email: normalizedEmail,
+            password: values.password,
+            role: values.role,
             createdAt: new Date().toISOString(),
         };
 
         addUser(user);
         setSession({ userId: user.id, createdAt: new Date().toISOString() });
         nav("/dashboard");
-    }
+    };
 
     return (
         <div className="container stack">
             <h1>Register</h1>
 
-            <section className="card stack">
+            <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
                     <span>Name</span>
-                    <input value={name} onChange={(e) => setName(e.target.value)} />
+                    <input {...register("name")} />
+                    <FormError error={errors.name} />
                 </label>
 
                 <label className="field">
                     <span>Email</span>
-                    <input value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <input {...register("email")} />
+                    <FormError error={errors.email} />
                 </label>
 
                 <label className="field">
                     <span>Role</span>
-                    <select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
+                    <select {...register("role")}>
                         <option value="crew">Crew</option>
                         <option value="captain">Captain</option>
                     </select>
+                    <FormError error={errors.role as any} />
                 </label>
 
                 <label className="field">
                     <span>Password</span>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <input type="password" {...register("password")} />
+                    <FormError error={errors.password} />
                 </label>
 
-                <button className="btn" type="button" onClick={submit}>
+                <button className="btn" type="submit" disabled={isSubmitting}>
                     Create account
                 </button>
 
                 <p className="muted">
                     Už máš účet? <Link to="/login">Login</Link>
                 </p>
-            </section>
+            </form>
         </div>
     );
 }
