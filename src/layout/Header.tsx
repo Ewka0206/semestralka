@@ -1,5 +1,5 @@
 // ...imports
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate , Link} from "react-router-dom";
 import { logout, getCurrentUser } from "../features/auth/repo";
 
 export function Header() {
@@ -14,10 +14,10 @@ export function Header() {
     return (
         <header className="header">
             <div className="container headerRow">
-                <div className="brand">
+                <Link to="/" className="brandLink" aria-label="Go to Discover">
                     <span className="brandMark">⛵</span>
                     <span className="brandText">Sail Connect</span>
-                </div>
+                </Link>
 
                 <nav className="nav">
                     <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>

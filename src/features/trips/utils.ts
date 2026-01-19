@@ -21,7 +21,7 @@ export function defaultTripFilters(): TripFiltersState {
 function includesCI(haystack: string, needle: string) {
     return haystack.toLowerCase().includes(needle.toLowerCase());
 }
-// src/features/trips/utils.ts
+
 export function formatDateRange(from: string | Date, to: string | Date) {
     const a = new Date(from);
     const b = new Date(to);
@@ -44,7 +44,7 @@ export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
             const ok =
                 includesCI(t.title, q) ||
                 includesCI(t.location, q) ||
-                includesCI(t.description, q) ||
+                includesCI(t.description ?? "", q) ||
                 includesCI(t.type, q);
             if (!ok) return false;
         }

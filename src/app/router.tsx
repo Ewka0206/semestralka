@@ -8,6 +8,8 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { CreateOfferPage } from "../pages/CreateOfferPage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
+import { EditOfferPage } from "../pages/EditOfferPage";
+import { EditBookingPage } from "../pages/EditBookingPage";
 
 export const router = createBrowserRouter([
     {
@@ -19,16 +21,19 @@ export const router = createBrowserRouter([
             { path: "login", element: <LoginPage /> },
             { path: "register", element: <RegisterPage /> },
 
-            // ✅ chráněné
             {
                 element: <ProtectedRoute />,
                 children: [{ path: "dashboard", element: <DashboardPage /> }],
             },
 
-            // ✅ chráněné (stačí přihlášení)
             {
                 element: <ProtectedRoute />,
-                children: [{ path: "offers/new", element: <CreateOfferPage /> }],
+                children: [
+                    { path: "offers/new", element: <CreateOfferPage /> },
+                    { path: "offers/:tripId/edit", element: <EditOfferPage /> },
+                    { path: "bookings/:bookingId/edit", element: <EditBookingPage /> },
+                    { path: "dashboard", element: <DashboardPage /> },
+                ],
             },
 
             { path: "*", element: <NotFoundPage /> },

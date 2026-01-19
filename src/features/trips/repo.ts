@@ -11,6 +11,12 @@ export function addUserTrip(trip: Trip): void {
     const curr = getUserTrips();
     writeJson(KEY, [trip, ...curr]);
 }
+
+export function updateUserTrip(updated: Trip): void {
+    const curr = getUserTrips();
+    writeJson(KEY, curr.map((t) => (t.id === updated.id ? updated : t)));
+}
+
 export function deleteUserTrip(tripId: string): void {
     const curr = getUserTrips();
     writeJson(KEY, curr.filter((t) => t.id !== tripId));

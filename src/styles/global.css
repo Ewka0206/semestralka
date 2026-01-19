@@ -48,6 +48,18 @@ a { color: inherit; }
 }
 .brandMark { font-size: 18px; }
 .brandText { letter-spacing: 0.2px; }
+.brandLink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    font-weight: 700;
+}
+
+.brandLink:hover {
+    opacity: 0.9;
+}
 
 .nav {
     display: flex;

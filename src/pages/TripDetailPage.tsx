@@ -7,7 +7,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { bookingSchema, type BookingForm } from "../features/bookings/schemas";
 import { FormError } from "../components/forms/FormError";
+import { getCurrentUser } from "../features/auth/repo";
 import type { Booking } from "../features/bookings/types";
+import type { Trip } from "../features/trips/types";
+import type { SubmitHandler} from "react-hook-form";
 
 function uid(): string {
     return crypto.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -17,19 +20,22 @@ export function TripDetailPage() {
     const { tripId } = useParams();
     const nav = useNavigate();
 
-    const memo = useMemo(() => {
+    const memo = useMemo<{ trip: Trip | null; isUserTrip: boolean }>(() => {
         const userTrips = getUserTrips();
-        const user = userTrips.find((t) => t.id === tripId);
-        if (user) return { trip: user, isUserTrip: true };
+        const userTrip = userTrips.find((t) => t.id === tripId);
+        if (userTrip) return { trip: userTrip, isUserTrip: true };
 
-        const mock = tripsMock.find((t) => t.id === tripId);
-        if (mock) return { trip: mock, isUserTrip: false };
+        const mockTrip = tripsMock.find((t) => t.id === tripId);
+        if (mockTrip) return { trip: mockTrip, isUserTrip: false };
 
         return { trip: null, isUserTrip: false };
     }, [tripId]);
 
     const trip = memo.trip;
     const isUserTrip = memo.isUserTrip;
+
+    const user = getCurrentUser();
+    const isOwnOffer = Boolean(user && trip?.ownerUserId && trip.ownerUserId === user.id);
 
     const [done, setDone] = useState(false);
     const {
@@ -38,7 +44,7 @@ export function TripDetailPage() {
         setError,
         formState: { errors, isSubmitting },
     } = useForm<BookingForm>({
-        resolver: zodResolver(bookingSchema),
+        resolver: zodResolver(bookingSchema) as any,
         defaultValues: { seats: 1, contactName: "", contactEmail: "" },
         mode: "onBlur",
     });
@@ -54,16 +60,16 @@ export function TripDetailPage() {
         );
     }
 
-    function handleDelete() {
+    function handleDelete(tripIdToDelete: string) {
         if (!isUserTrip) return;
         const ok = confirm("Opravdu smazat tuto nabídku?");
         if (!ok) return;
 
-        deleteUserTrip(trip.id);
+        deleteUserTrip(tripIdToDelete);
         nav("/");
     }
 
-    const onBook = (values: BookingForm) => {
+    const onBook: SubmitHandler<BookingForm> = (values) => {
         if (values.seats > trip.capacity) {
             setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
@@ -108,7 +114,7 @@ export function TripDetailPage() {
                 ) : null}
 
                 {isUserTrip && (
-                    <button className="btn" type="button" onClick={handleDelete}>
+                    <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
                         Delete offer
                     </button>
                 )}
@@ -117,7 +123,11 @@ export function TripDetailPage() {
             <section className="card stack">
                 <h2>Rezervace</h2>
 
-                {done ? (
+                {isOwnOffer ? (
+                    <p className="muted">
+                        Tohle je tvoje vlastní nabídka – nemůžeš si ji rezervovat.
+                    </p>
+                ) : done ? (
                     <div className="stack">
                         <p>✅ Rezervace uložena do LocalStorage.</p>
                         <Link to="/dashboard">Jít na Dashboard</Link>

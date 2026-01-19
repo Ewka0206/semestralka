@@ -1,26 +1,22 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { getUserTrips, updateUserTrip } from "../features/trips/repo";
 import type { Trip } from "../features/trips/types";
-import { addUserTrip } from "../features/trips/repo";
 import { createOfferSchema, tripTypes, type CreateOfferForm } from "../features/trips/schemas";
 import { FormError } from "../components/forms/FormError";
-import { getCurrentUser } from "../features/auth/repo";
 
-function uid(): string {
-    return crypto.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-export function CreateOfferPage() {
+export function EditOfferPage() {
+    const { tripId } = useParams();
     const nav = useNavigate();
-    const user = getCurrentUser();
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isSubmitting },
-    } = useForm<CreateOfferForm>({
+    const trip = useMemo(() => {
+        return getUserTrips().find((t) => t.id === tripId) ?? null;
+    }, [tripId]);
+
+    const form = useForm<CreateOfferForm>({
         resolver: zodResolver(createOfferSchema) as any,
         defaultValues: {
             title: "",
@@ -37,19 +33,40 @@ export function CreateOfferPage() {
         mode: "onBlur",
     });
 
+    useEffect(() => {
+        if (!trip) return;
+        form.reset({
+            title: trip.title,
+            location: trip.location,
+            country: trip.country ?? "",
+            type: trip.type,
+            startDate: trip.startDate,
+            endDate: trip.endDate,
+            priceCzk: trip.priceCzk,
+            capacity: trip.capacity,
+            highlightsText: (trip.highlights ?? []).join("\n"),
+            description: trip.description ?? "",
+        });
+    }, [trip, form]);
+
+    if (!trip) {
+        return (
+            <div className="container stack">
+                <h1>Edit offer</h1>
+                <p className="muted">Tuhle nabídku nelze upravit (neexistuje nebo není v LocalStorage).</p>
+                <Link to="/dashboard">← Zpět na Dashboard</Link>
+            </div>
+        );
+    }
+
     const onSubmit = (values: CreateOfferForm) => {
         const parsedHighlights = values.highlightsText
             .split("\n")
             .map((s) => s.trim())
             .filter(Boolean);
 
-        const highlights =
-            parsedHighlights.length > 0
-                ? parsedHighlights
-                : ["New offer", "Custom route", "Friendly crew"];
-
-        const trip: Trip = {
-            id: uid(),
+        const updated: Trip = {
+            ...trip,
             title: values.title.trim(),
             location: values.location.trim(),
             country: values.country.trim() || "—",
@@ -58,22 +75,24 @@ export function CreateOfferPage() {
             endDate: values.endDate,
             priceCzk: values.priceCzk,
             capacity: values.capacity,
-
-            booked: 0,
-            skipperIncluded: true,
-            highlights,
+            highlights: parsedHighlights.length ? parsedHighlights : trip.highlights ?? [],
             description: values.description.trim() || "—",
-
-            ownerUserId: user?.id,
+            // ownerUserId se zachová díky ...trip
         };
 
-        addUserTrip(trip);
+        updateUserTrip(updated);
         nav(`/trips/${trip.id}`);
     };
 
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+    } = form;
+
     return (
         <div className="container stack">
-            <h1>Create offer</h1>
+            <h1>Edit offer</h1>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
                 <label className="field">
@@ -91,7 +110,7 @@ export function CreateOfferPage() {
 
                     <label className="field">
                         <span>Country</span>
-                        <input {...register("country")} placeholder="Greece" />
+                        <input {...register("country")} />
                     </label>
                 </div>
 
@@ -145,9 +164,12 @@ export function CreateOfferPage() {
                     <textarea rows={4} {...register("description")} />
                 </label>
 
-                <button className="btn" type="submit" disabled={isSubmitting}>
-                    Save offer
-                </button>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <button className="btn" type="submit" disabled={isSubmitting}>
+                        Save changes
+                    </button>
+                    <Link to={`/trips/${trip.id}`}>Cancel</Link>
+                </div>
             </form>
         </div>
     );
