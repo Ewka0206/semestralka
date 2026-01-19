@@ -1,12 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
-import { MainLayout } from "../layout/MainLayout.tsx";
-import { HomePage } from "../pages/HomePage.tsx";
-import { TripDetailPage } from "../pages/TripDetailPage.tsx";
-import { LoginPage } from "../pages/LoginPage.tsx";
-import { RegisterPage } from "../pages/RegisterPage.tsx";
-import { DashboardPage } from "../pages/DashboardPage.tsx";
-import { CreateOfferPage } from "../pages/CreateOfferPage.tsx";
-import { NotFoundPage } from "../pages/NotFoundPage.tsx";
+import { MainLayout } from "../layout/MainLayout";
+import { HomePage } from "../pages/HomePage";
+import { TripDetailPage } from "../pages/TripDetailPage";
+import { LoginPage } from "../pages/LoginPage";
+import { RegisterPage } from "../pages/RegisterPage";
+import { DashboardPage } from "../pages/DashboardPage";
+import { CreateOfferPage } from "../pages/CreateOfferPage";
+import { NotFoundPage } from "../pages/NotFoundPage";
+import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 
 export const router = createBrowserRouter([
     {
@@ -18,9 +19,17 @@ export const router = createBrowserRouter([
             { path: "login", element: <LoginPage /> },
             { path: "register", element: <RegisterPage /> },
 
-            // zatím bez ochrany (ProtectedRoute přidáme v dalším kroku)
-            { path: "dashboard", element: <DashboardPage /> },
-            { path: "offers/new", element: <CreateOfferPage /> },
+            // ✅ chráněné
+            {
+                element: <ProtectedRoute />,
+                children: [{ path: "dashboard", element: <DashboardPage /> }],
+            },
+
+            // ✅ chráněné (stačí přihlášení)
+            {
+                element: <ProtectedRoute />,
+                children: [{ path: "offers/new", element: <CreateOfferPage /> }],
+            },
 
             { path: "*", element: <NotFoundPage /> },
         ],

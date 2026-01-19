@@ -150,3 +150,21 @@ a { color: inherit; }
     border: 1px solid rgba(231, 238, 252, 0.14);
     background: rgba(231, 238, 252, 0.04);
 }
+.grid2 {
+    display: grid;
+    gap: 12px;
+}
+@media (min-width: 700px) {
+    .grid2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.field textarea {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(231, 238, 252, 0.18);
+    background: rgba(231, 238, 252, 0.06);
+    color: inherit;
+    resize: vertical;
+}

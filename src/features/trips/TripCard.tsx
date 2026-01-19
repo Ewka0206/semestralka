@@ -5,7 +5,10 @@ import { formatDateRange } from "./utils.ts";
 type Props = { trip: Trip };
 
 export function TripCard({ trip }: Props) {
-    const free = Math.max(0, trip.capacity - trip.booked);
+    const booked = trip.booked ?? 0;
+    const free = Math.max(0, trip.capacity - booked);
+
+    const highlights = trip.highlights ?? [];
 
     return (
         <article className="tripCard">
@@ -13,7 +16,10 @@ export function TripCard({ trip }: Props) {
                 <div>
                     <h3 className="tripTitle">{trip.title}</h3>
                     <p className="muted">
-                        {trip.location} · {trip.country} · {trip.type}
+                        {trip.location}
+                        {trip.country ? ` · ${trip.country}` : ""}
+                        {" · "}
+                        {trip.type}
                     </p>
                 </div>
 
@@ -39,11 +45,13 @@ export function TripCard({ trip }: Props) {
                 </div>
             </div>
 
-            <ul className="tripHighlights">
-                {trip.highlights.slice(0, 3).map((h) => (
-                    <li key={h}>{h}</li>
-                ))}
-            </ul>
+            {highlights.length > 0 && (
+                <ul className="tripHighlights">
+                    {highlights.slice(0, 3).map((h) => (
+                        <li key={h}>{h}</li>
+                    ))}
+                </ul>
+            )}
 
             <div className="tripActions">
                 <Link className="btn" to={`/trips/${trip.id}`}>

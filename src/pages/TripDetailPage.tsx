@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { tripsMock } from "../data/tripsMock";
 import { addBooking } from "../features/bookings/repo";
+import { getUserTrips } from "../features/trips/repo";
 import type { Booking } from "../features/bookings/types";
 
 function uid(): string {
@@ -12,7 +13,8 @@ export function TripDetailPage() {
     const { tripId } = useParams();
 
     const trip = useMemo(() => {
-        return tripsMock.find((t) => t.id === tripId);
+        const all = [...getUserTrips(), ...tripsMock];
+        return all.find((t) => t.id === tripId);
     }, [tripId]);
 
     const [seats, setSeats] = useState(1);
