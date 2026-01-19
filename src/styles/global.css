@@ -106,3 +106,47 @@ a { color: inherit; }
     background: rgba(231, 238, 252, 0.06);
     color: inherit;
 }
+.field {
+    display: grid;
+    gap: 6px;
+}
+
+.field input {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(231, 238, 252, 0.18);
+    background: rgba(231, 238, 252, 0.06);
+    color: inherit;
+}
+
+.btn {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(231, 238, 252, 0.25);
+    background: rgba(231, 238, 252, 0.10);
+    color: inherit;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: rgba(231, 238, 252, 0.14);
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.listItem {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(231, 238, 252, 0.14);
+    background: rgba(231, 238, 252, 0.04);
+}
