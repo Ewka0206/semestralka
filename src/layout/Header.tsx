@@ -1,25 +1,51 @@
-// ...imports
-import { NavLink, useNavigate , Link} from "react-router-dom";
-import { logout, getCurrentUser } from "../features/auth/repo";
+import { useEffect, useState } from "react";
+import { NavLink, useNavigate, Link, useLocation } from "react-router-dom";
+import { userRoleLabels } from "../features/auth/i18n";
+import { useAuth } from "../features/auth/AuthContext";
 
 export function Header() {
     const navigate = useNavigate();
-    const user = getCurrentUser();
+    const location = useLocation();
+    const { user, logout } = useAuth();
+
+    const [isOpen, setIsOpen] = useState(false);
 
     function handleLogout() {
         logout();
+        setIsOpen(false);
         navigate("/");
     }
+
+    useEffect(() => {
+        setIsOpen(false);
+    }, [location.pathname]);
 
     return (
         <header className="header">
             <div className="container headerRow">
-                <Link to="/" className="brandLink" aria-label="Go to Discover">
-                    <span className="brandMark">⛵</span>
+                <Link to="/" className="brandLink" aria-label="Jít na úvod">
+                    <img
+                        className="brandLogo"
+                        src="/images/logo.png"
+                        alt="Sail Connect"
+                    />
                     <span className="brandText">Sail Connect</span>
                 </Link>
 
-                <nav className="nav">
+                {/* Burger jen pro mobil */}
+                <button
+                    className="burger"
+                    type="button"
+                    aria-label={isOpen ? "Zavřít menu" : "Otevřít menu"}
+                    aria-expanded={isOpen}
+                    onClick={() => setIsOpen((v) => !v)}
+                >
+                    <span className="burgerLine" />
+                    <span className="burgerLine" />
+                    <span className="burgerLine" />
+                </button>
+
+                <nav className={`nav ${isOpen ? "navOpen" : ""}`}>
                     <NavLink to="/" className={({ isActive }) => (isActive ? "active" : "")}>
                         Domů
                     </NavLink>
@@ -34,13 +60,13 @@ export function Header() {
 
                     {user ? (
                         <>
-                    <NavLink className="nav" to="/me">
-                        {user.name} ({user.role})
-                    </NavLink>
+                            <NavLink to="/me" className={({ isActive }) => (isActive ? "active" : "")}>
+                                {user.name} ({userRoleLabels[user.role]})
+                            </NavLink>
 
-                    <button className="btn" type="button" onClick={handleLogout}>
-                        Odhlášení
-                    </button>
+                            <button className="btn" type="button" onClick={handleLogout}>
+                                Odhlášení
+                            </button>
                         </>
                     ) : (
                         <>

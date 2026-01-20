@@ -59,6 +59,8 @@ export function TripDetailPage() {
         );
     }
 
+    const imageSrc = trip.imageUrl ?? "/images/trips/placeholder.jpg";
+
     function handleDelete(tripIdToDelete: string) {
         if (!isOwnOffer) return;
         const ok = confirm("Opravdu smazat tuto nabídku?");
@@ -96,6 +98,10 @@ export function TripDetailPage() {
                     {trip.country ? ` · ${trip.country}` : ""} · {trip.startDate} – {trip.endDate} · {trip.type}
                 </p>
             </header>
+
+            <div className="tripHeroWrap">
+                <img className="tripHero" src={imageSrc} alt={trip.title} loading="lazy" />
+            </div>
 
             <section className="card stack">
 
@@ -136,7 +142,7 @@ export function TripDetailPage() {
                 ) : done ? (
                     <div className="stack">
                         <p>✅ Rezervace uložena do LocalStorage.</p>
-                        <Link to="/dashboard">Jít na Dashboard</Link>
+                        <Link to="/dashboard">Jít na Můj přehled</Link>
                     </div>
                 ) : (
                     <form className="stack" onSubmit={handleSubmit(onBook)}>
@@ -165,7 +171,7 @@ export function TripDetailPage() {
                 )}
             </section>
 
-            <Link to="/">← Zpět na Discover</Link>
+            <Link to="/">← Zpět na Domovskou stránku</Link>
         </div>
     );
 }

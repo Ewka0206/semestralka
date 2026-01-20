@@ -28,7 +28,6 @@ export function formatDateRange(from: string | Date, to: string | Date) {
 
     const fmt = new Intl.DateTimeFormat("cs-CZ", { day: "2-digit", month: "2-digit", year: "numeric" });
 
-    // pokud je stejné datum, vrať jen jedno
     if (a.toDateString() === b.toDateString()) return fmt.format(a);
 
     return `${fmt.format(a)} – ${fmt.format(b)}`;
@@ -36,9 +35,7 @@ export function formatDateRange(from: string | Date, to: string | Date) {
 
 export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
     return trips.filter((t) => {
-        // --------------------
-        // SEARCH (text)
-        // --------------------
+
         if (f.q.trim()) {
             const q = f.q.trim();
             const ok =
@@ -49,34 +46,22 @@ export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
             if (!ok) return false;
         }
 
-        // --------------------
-        // TYPE
-        // --------------------
         if (f.type !== "Any" && t.type !== f.type) {
             return false;
         }
 
-        // --------------------
-        // DATE FROM
-        // --------------------
         if (f.dateFrom) {
             if (t.startDate < f.dateFrom) {
                 return false;
             }
         }
 
-        // --------------------
-        // DATE TO
-        // --------------------
         if (f.dateTo) {
             if (t.endDate > f.dateTo) {
                 return false;
             }
         }
 
-        // --------------------
-        // MAX PRICE
-        // --------------------
         if (f.maxPriceCzk !== null) {
             if (t.priceCzk > f.maxPriceCzk) {
                 return false;

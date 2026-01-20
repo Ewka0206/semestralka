@@ -1,12 +1,12 @@
-// TODO (později): AuthContext / useAuthProvider,
-// aby Header reagoval reaktivně bez refresh a bez volání getCurrentUser() "natvrdo".
-
-
 import { readJson, writeJson } from "../../lib/storage";
 import type { Session, User } from "./types";
 
 const USERS_KEY = "sailconnect_users_v1";
 const SESSION_KEY = "sailconnect_session_v1";
+
+function notifyAuthChanged() {
+    window.dispatchEvent(new Event("auth:changed"));
+}
 
 export function getUsers(): User[] {
     return readJson<User[]>(USERS_KEY, []);
@@ -14,6 +14,7 @@ export function getUsers(): User[] {
 
 export function saveUsers(users: User[]): void {
     writeJson(USERS_KEY, users);
+    notifyAuthChanged();
 }
 
 export function findUserByEmail(email: string): User | undefined {
@@ -32,6 +33,7 @@ export function getSession(): Session | null {
 
 export function setSession(session: Session | null): void {
     writeJson(SESSION_KEY, session);
+    notifyAuthChanged();
 }
 
 export function getCurrentUser(): User | null {

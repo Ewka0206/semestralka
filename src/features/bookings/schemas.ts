@@ -4,7 +4,7 @@ export const bookingSchema = z.object({
     contactName: z
         .string()
         .trim()
-        .min(2, "Jméno aspoň 2 znaky."),
+        .min(2, "Jméno musí mít aspoň 2 znaky."),
     contactEmail: z
         .string()
         .trim()

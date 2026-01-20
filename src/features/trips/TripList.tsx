@@ -12,6 +12,7 @@ export function TripList({ trips }: Props) {
 
     return (
         <div className="stack">
+            <h1>Nabídka plaveb</h1>
             {trips.map((trip) => (
                 <TripCard key={trip.id} trip={trip} />
             ))}

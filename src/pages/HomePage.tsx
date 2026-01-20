@@ -19,15 +19,29 @@ export function HomePage() {
 
     return (
         <div className="container stack">
-            <h1>Objev zážitky</h1>
+            <section className="article">
+                <article>
+                    <h1>Najdi posádku, plavbu nebo kapitána!</h1>
+                    <p>Hledáte posádku nebo plavbu snů?
+                        Sail Connect propojuje kapitány s dobrodruhy, kteří chtějí objevovat svět po vlnách.
+                        Ať už jste zkušený mořský vlk, začínající námořník nebo jen toužíte zažít vítr ve vlasech, u nás
+                        najdete perfektní posádku i plavbu.</p>
 
+                    <p>🌊 Najděte svou vysněnou plavbu</p>
+                    <p>⚓ Přidejte se k posádce a poznejte nové přátele</p>
+                    <p>🌍 Prozkoumejte svět z paluby jachty</p>
+
+                    <p> Přidejte se ke komunitě milovníků moře a nechte se unášet vlnami nových zážitků! Vyplujte s námi
+                        ještě dnes!</p>
+                </article>
+            </section>
             <TripFilters
                 value={filters}
                 onChange={setFilters}
                 onReset={() => setFilters(defaultTripFilters())}
             />
 
-            <TripList trips={filteredTrips} />
+            <TripList trips={filteredTrips}/>
         </div>
     );
 }

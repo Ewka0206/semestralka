@@ -4,19 +4,20 @@ export const tripTypes = ["Training", "Adventure", "Relax"] as const;
 
 export const createOfferSchema = z
     .object({
-        title: z.string().trim().min(3, "Title musí mít aspoň 3 znaky."),
-        location: z.string().trim().min(2, "Location je povinná."),
+        title: z.string().trim().min(3, "Název musí mít aspoň 3 znaky."),
+        location: z.string().trim().min(2, "Destinace je povinná."),
         country: z.string().trim().default(""),
         type: z.enum(tripTypes),
-        startDate: z.string().min(1, "Start date je povinný."),
-        endDate: z.string().min(1, "End date je povinný."),
-        priceCzk: z.coerce.number().int().positive("Cena musí být > 0."),
-        capacity: z.coerce.number().int().min(1, "Capacity musí být >= 1."),
+        startDate: z.string().min(1, "Datum od je povinné."),
+        endDate: z.string().min(1, "Datum do je povinné."),
+        priceCzk: z.coerce.number().int().positive("Cena musí být venší než 0."),
+        capacity: z.coerce.number().int().min(1, "Počet míst musí být alespoň 1."),
         highlightsText: z.string().default(""),
         description: z.string().trim().default(""),
+        imageUrl: z.string().trim().optional().or(z.literal("")),
     })
     .refine((v) => v.endDate >= v.startDate, {
-        message: "End date musí být po start date.",
+        message: "Datum do musí být větší než datum od",
         path: ["endDate"],
     });
 

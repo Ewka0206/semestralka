@@ -13,13 +13,14 @@ type Props = {
 export function TripFilters({ value, onChange, onReset }: Props) {
     return (
         <div className="card stack">
+            <h1 className="sectionTitle">Vyplujte za dobrodružstvím se Sail Connect! ⛵</h1>
             <div className="grid2">
                 <div className="field">
                     <label>Destinace</label>
                     <input
                         value={value.q}
                         onChange={(e) => onChange({ ...value, q: e.target.value })}
-                        placeholder="Korfu / Řecko / trénink…"
+                        placeholder="Korfu / Athény / Skotsko / Severní moře..."
                     />
                 </div>
 

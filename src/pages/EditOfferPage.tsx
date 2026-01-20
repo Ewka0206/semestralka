@@ -77,7 +77,7 @@ export function EditOfferPage() {
             capacity: values.capacity,
             highlights: parsedHighlights.length ? parsedHighlights : trip.highlights ?? [],
             description: values.description.trim() || "—",
-            // ownerUserId se zachová díky ...trip
+            imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
         };
 
         updateUserTrip(updated);
@@ -87,6 +87,7 @@ export function EditOfferPage() {
     const {
         register,
         handleSubmit,
+        watch,
         formState: { errors, isSubmitting },
     } = form;
 
@@ -163,6 +164,25 @@ export function EditOfferPage() {
                     <span>Souhrn</span>
                     <textarea rows={4} {...register("highlightsText")} />
                 </label>
+
+                <label className="field">
+                    <span>Obrázek (URL nebo /images/...)</span>
+                    <input
+                        {...register("imageUrl")}
+                        placeholder="/images/trips/placeholder.jpg nebo https://..."
+                    />
+                </label>
+
+                {(watch("imageUrl")?.trim() || trip.imageUrl) ? (
+                    <div className="tripHeroWrap">
+                        <img
+                            className="tripHero"
+                            src={(watch("imageUrl")?.trim() || trip.imageUrl) as string}
+                            alt="Náhled obrázku"
+                            loading="lazy"
+                        />
+                    </div>
+                ) : null}
 
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <button className="btn" type="submit" disabled={isSubmitting}>

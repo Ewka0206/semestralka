@@ -50,6 +50,7 @@ export function CreateOfferPage() {
         const trip: Trip = {
             id: uid(),
             title: values.title.trim(),
+            imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
             location: values.location.trim(),
             country: values.country.trim() || "—",
             type: values.type,
@@ -57,12 +58,10 @@ export function CreateOfferPage() {
             endDate: values.endDate,
             priceCzk: values.priceCzk,
             capacity: values.capacity,
-
             booked: 0,
             skipperIncluded: true,
             highlights,
             description: values.description.trim() || "—",
-
             ownerUserId: user?.id,
         };
 
@@ -142,6 +141,15 @@ export function CreateOfferPage() {
                 <label className="field">
                     <span>Souhrn (1 bod na řádek)</span>
                     <textarea rows={4} {...register("highlightsText")} />
+                </label>
+
+                <label className="field">
+                    <span>Obrázek (URL nebo /images/...)</span>
+                    <input
+                        {...register("imageUrl")}
+                        placeholder="/images/trips/placeholder.jpg nebo https://..."
+                    />
+                    <FormError error={errors.imageUrl as any} />
                 </label>
 
                 <button className="btn" type="submit" disabled={isSubmitting}>

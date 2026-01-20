@@ -18,5 +18,6 @@ export type Trip = {
     highlights?: string[];
     description?: string;
 
+    imageUrl?: string;
     ownerUserId?: string;
 };

@@ -1,13 +1,14 @@
-import { useEffect } from "react";
+import { useEffect} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { UserRole } from "../features/auth/types";
-import { getCurrentUser, updateCurrentUser } from "../features/auth/repo";
 import { userRoleLabels } from "../features/auth/i18n";
 import { FormError } from "../components/forms/FormError";
+import { useAuth } from "../features/auth/AuthContext";
+
 
 const roles: UserRole[] = ["crew", "captain"];
 
@@ -21,22 +22,26 @@ type EditUserForm = z.infer<typeof editUserSchema>;
 
 export function EditUserPage() {
     const nav = useNavigate();
-    const user = getCurrentUser();
+
+    const { user, updateUser } = useAuth();
 
     const form = useForm<EditUserForm>({
         resolver: zodResolver(editUserSchema),
         defaultValues: { name: "", email: "", role: "crew" },
         mode: "onBlur",
+        shouldUnregister: false,
     });
 
     useEffect(() => {
         if (!user) return;
+
         form.reset({
             name: user.name ?? "",
             email: user.email ?? "",
             role: user.role,
         });
-    }, [user, form]);
+
+    }, [user]);
 
     if (!user) {
         return (
@@ -51,13 +56,11 @@ export function EditUserPage() {
     }
 
     const onSubmit = (values: EditUserForm) => {
-        updateCurrentUser({
+        updateUser({
             name: values.name.trim(),
             email: values.email.trim(),
             role: values.role,
-            // updatedAt se nastaví v updateCurrentUser()
         });
-
         nav("/me");
     };
 

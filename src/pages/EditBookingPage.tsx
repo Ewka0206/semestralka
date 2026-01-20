@@ -89,7 +89,7 @@ export function EditBookingPage() {
 
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                         <button className="btn" type="submit" disabled={isSubmitting}>Uložit</button>
-                        <Link to="/dashboard">Zrušit</Link>
+                        <Link className="btn" to="/dashboard">Zrušit</Link>
                     </div>
                 </form>
             </section>
