@@ -29,25 +29,33 @@ V kořeni projektu:
 
 ```bash
 npm install
-
+```
 
 ## Spuštění (dev server)
+```bash
 npm run dev
+```
 
 Aplikace je nastavena aby běžela:
 http://127.0.0.1:5173/
 
 ## Build (produkční)
+```bash
 npm run build
 npm run preview
+```
 
 ##Testy
 Testy jsou umístěné ve složce src/test.
 Spuštění testů jednorázově:
+```bash
 npm run test:run
+```
 
 Spuštění testů v watch režimu:
+```bash
 npm run test
+```
 
 Pozn.: konfigurace Vitestu používá jsdom a setupFiles: ./src/test/setup.ts.
 
