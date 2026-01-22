@@ -36,3 +36,47 @@ npm run dev
 
 Aplikace je nastavena aby běžela:
 http://127.0.0.1:5173/
+
+## Build (produkční)
+npm run build
+npm run preview
+
+##Testy
+Testy jsou umístěné ve složce src/test.
+Spuštění testů jednorázově:
+npm run test:run
+
+Spuštění testů v watch režimu:
+npm run test
+
+Pozn.: konfigurace Vitestu používá jsdom a setupFiles: ./src/test/setup.ts.
+
+## Data a persistence (LocalStorage)
+Aplikace ukládá data do LocalStorage (repo vrstva):
+uživatelé / session (auth)
+nabídky (user trips)
+rezervace (bookings)
+Pokud chceš aplikaci „vyčistit“, smaž LocalStorage pro daný origin (DevTools → Application → Local Storage).
+
+## Obrázky (assets)
+Obrázky pro plavby jsou v public/images/trips/ a používají varianty:
+_400 / _800 / _1200 (pro responsive načítání)
+
+Příklad názvu:
+zapad_slunce_plaz_400.jpg, zapad_slunce_plaz_800.jpg, zapad_slunce_plaz_1200.webp
+Pokud je imageUrl u tripu prázdné, používá se placeholder.
+
+## Routy (přehled)
+Ve zkratce:
+/ – Domů (Discover)
+/trips/:tripId – Detail plavby
+/login, /register – Přihlášení / Registrace
+/dashboard – Můj přehled (chráněné)
+/offers/new, /offers/:tripId/edit – Vytvořit / upravit nabídku (chráněné)
+/bookings/:bookingId, /bookings/:bookingId/edit – Detail / edit rezervace (chráněné)
+/me, /me/edit – Profil / editace profilu (chráněné)
+
+## Poznámky
+Aplikace je čistě klientská (bez backendu).
+Chráněné stránky jsou dostupné pouze po přihlášení (ProtectedRoute).
+Správa stavu přihlášení je řešena pomocí AuthContext.
