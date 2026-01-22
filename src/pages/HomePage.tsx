@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { tripsMock } from "../data/tripsMock";
-
+import { usePageTitle } from "../hooks/usePageTitle";
 import { TripFilters } from "../features/trips/TripFilters";
 import { TripList } from "../features/trips/TripList";
 import { applyTripFilters, defaultTripFilters } from "../features/trips/utils";
 import { getUserTrips } from "../features/trips/repo";
 
 export function HomePage() {
+    usePageTitle("Sail Connect – Najdi plavbu nebo posádku");
     const [filters, setFilters] = useState(defaultTripFilters());
 
     const allTrips = useMemo(() => {

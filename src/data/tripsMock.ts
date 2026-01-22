@@ -4,7 +4,7 @@ export const tripsMock: Trip[] = [
     {
         id: "korfu-2026-06",
         title: "Korfu – start léta v azurových zátokách",
-        imageUrl: "/images/trips/zapad_slunce_plaz.jpg",
+        imageUrl: "/images/trips/zapad_slunce_plaz",
         location: "Korfu",
         country: "Greece",
         type: "Relax",
@@ -20,7 +20,7 @@ export const tripsMock: Trip[] = [
     {
         id: "saronic-2026-05",
         title: "Saronský záliv – plachetní trénink a manévry",
-        imageUrl: "/images/trips/IMG_20230705_141141.jpg",
+        imageUrl: "/images/trips/sailing",
         location: "Saronic Gulf",
         country: "Greece",
         type: "Training",
@@ -36,7 +36,7 @@ export const tripsMock: Trip[] = [
     {
         id: "stockholm-2026-07",
         title: "Stockholmské souostroví – severské dobrodružství",
-        imageUrl: "/images/trips/lod_u_skaly_v_zatoce.jpg",
+        imageUrl: "/images/trips/lod_u_skaly_v_zatoce",
         location: "Stockholm Archipelago",
         country: "Sweden",
         type: "Adventure",

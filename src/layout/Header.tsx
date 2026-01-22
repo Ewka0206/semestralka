@@ -64,7 +64,7 @@ export function Header() {
                                 {user.name} ({userRoleLabels[user.role]})
                             </NavLink>
 
-                            <button className="btn" type="button" onClick={handleLogout}>
+                            <button className="btnLogout" type="button" onClick={handleLogout}>
                                 Odhlášení
                             </button>
                         </>

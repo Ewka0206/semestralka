@@ -1,22 +1,27 @@
 import { Link } from "react-router-dom";
 import type { Trip } from "./types";
 import { formatDateRange } from "./utils";
+import { tripTypeLabels } from "./i18n";
 
-type Props = { trip: Trip };
+type Props = { trip: Trip; priority?: boolean };
 
 export function TripCard({ trip }: Props) {
     const booked = trip.booked ?? 0;
     const free = Math.max(0, trip.capacity - booked);
     const highlights = trip.highlights ?? [];
-
-    const imageSrc = trip.imageUrl ?? "/images/trips/placeholder.jpg";
+    const base = trip.imageUrl ?? "/images/trips/placeholder";
 
     return (
         <article className="tripCard">
-            {/* IMAGE */}
             <Link to={`/trips/${trip.id}`} className="tripImageLink">
                 <img
-                    src={imageSrc}
+                    src={`${base}_800.webp`}
+                    srcSet={`
+                            ${base}_400.webp 400w,
+                            ${base}_800.webp 800w,
+                            ${base}_1200.webp 1200w
+  `}
+                    sizes="(max-width: 720px) 92vw, (max-width: 1024px) 45vw, 340px"
                     alt={trip.title}
                     className="tripImage"
                     loading="lazy"
@@ -26,12 +31,12 @@ export function TripCard({ trip }: Props) {
             <div className="tripContent">
                 <div className="tripTop">
                     <div>
-                        <h3 className="tripTitle">{trip.title}</h3>
+                        <h2 className="tripTitle">{trip.title}</h2>
                         <p className="muted">
                             {trip.location}
                             {trip.country ? ` · ${trip.country}` : ""}
                             {" · "}
-                            {trip.type}
+                            {tripTypeLabels[trip.type]}
                         </p>
                     </div>
                 </div>

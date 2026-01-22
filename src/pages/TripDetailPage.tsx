@@ -11,6 +11,7 @@ import { getCurrentUser } from "../features/auth/repo";
 import type { Booking } from "../features/bookings/types";
 import type { Trip } from "../features/trips/types";
 import type { SubmitHandler} from "react-hook-form";
+import { tripTypeLabels } from "../features/trips/i18n";
 
 function uid(): string {
     return crypto.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -59,7 +60,7 @@ export function TripDetailPage() {
         );
     }
 
-    const imageSrc = trip.imageUrl ?? "/images/trips/placeholder.jpg";
+    const base = trip.imageUrl ?? "/images/trips/placeholder";
 
     function handleDelete(tripIdToDelete: string) {
         if (!isOwnOffer) return;
@@ -95,12 +96,22 @@ export function TripDetailPage() {
                 <h1>{trip.title}</h1>
                 <p className="muted">
                     {trip.location}
-                    {trip.country ? ` · ${trip.country}` : ""} · {trip.startDate} – {trip.endDate} · {trip.type}
+                    {trip.country ? ` · ${trip.country}` : ""} · {trip.startDate} – {trip.endDate} · {tripTypeLabels[trip.type]}
                 </p>
             </header>
 
             <div className="tripHeroWrap">
-                <img className="tripHero" src={imageSrc} alt={trip.title} loading="lazy" />
+                <img src={`${base}_1200.webp`}
+                     srcSet={`
+                            ${base}_400.webp 400w,
+                            ${base}_800.webp 800w,
+                            ${base}_1200.webp 1200w
+  `}
+                     sizes="(max-width: 720px) 92vw, (max-width: 1024px) 45vw, 340px"
+                     alt={trip.title}
+                     className="tripHero"
+                     fetchPriority="high"
+                     decoding="async"/>
             </div>
 
             <section className="card stack">

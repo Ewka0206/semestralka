@@ -11,22 +11,40 @@ type Props = {
 };
 
 export function TripFilters({ value, onChange, onReset }: Props) {
+    const idQ = "tripFilters-q";
+    const idType = "tripFilters-type";
+    const idFrom = "tripFilters-from";
+    const idTo = "tripFilters-to";
+    const idPrice = "tripFilters-price";
+
     return (
-        <div className="card stack">
-            <h1 className="sectionTitle">Vyplujte za dobrodružstvím se Sail Connect! ⛵</h1>
-            <div className="grid2">
+        <section className="card stack" aria-labelledby="tripFiltersTitle">
+            <h2 id="tripFiltersTitle" className="sectionTitle">
+                Filtr
+            </h2>
+
+            <form
+                className="grid2"
+                role="search"
+                aria-label="Filtrování nabídky plaveb"
+                onSubmit={(e) => e.preventDefault()}
+            >
                 <div className="field">
-                    <label>Destinace</label>
+                    <label htmlFor={idQ}>Destinace</label>
                     <input
+                        id={idQ}
                         value={value.q}
                         onChange={(e) => onChange({ ...value, q: e.target.value })}
-                        placeholder="Korfu / Athény / Skotsko / Severní moře..."
+                        placeholder="Korfu / Athény / Skotsko / Severní moře…"
+                        autoComplete="off"
+                        inputMode="search"
                     />
                 </div>
 
                 <div className="field">
-                    <label>Typ plavby</label>
+                    <label htmlFor={idType}>Typ plavby</label>
                     <select
+                        id={idType}
                         value={value.type}
                         onChange={(e) =>
                             onChange({ ...value, type: e.target.value as TripFiltersState["type"] })
@@ -41,8 +59,9 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                 </div>
 
                 <div className="field">
-                    <label>Datum od</label>
+                    <label htmlFor={idFrom}>Datum od</label>
                     <input
+                        id={idFrom}
                         type="date"
                         value={value.dateFrom}
                         onChange={(e) => onChange({ ...value, dateFrom: e.target.value })}
@@ -50,17 +69,20 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                 </div>
 
                 <div className="field">
-                    <label>Datum do</label>
+                    <label htmlFor={idTo}>Datum do</label>
                     <input
+                        id={idTo}
                         type="date"
                         value={value.dateTo}
                         onChange={(e) => onChange({ ...value, dateTo: e.target.value })}
+                        min={value.dateFrom || undefined}
                     />
                 </div>
 
                 <div className="field">
-                    <label>Maximální cena (CZK)</label>
+                    <label htmlFor={idPrice}>Maximální cena (CZK)</label>
                     <input
+                        id={idPrice}
                         type="number"
                         min={0}
                         value={value.maxPriceCzk ?? ""}
@@ -71,16 +93,17 @@ export function TripFilters({ value, onChange, onReset }: Props) {
                             })
                         }
                         placeholder="např. 18000"
+                        inputMode="numeric"
                     />
                 </div>
 
-                <div className="field actionsRow">
-                    <label>&nbsp;</label>
+                {}
+                <div className="field" style={{ alignSelf: "end" }}>
                     <button className="btn" type="button" onClick={onReset}>
                         Vymazat filtry
                     </button>
                 </div>
-            </div>
-        </div>
+            </form>
+        </section>
     );
 }
