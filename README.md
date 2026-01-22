@@ -45,7 +45,7 @@ npm run build
 npm run preview
 ```
 
-##Testy
+## Testy
 Testy jsou umístěné ve složce src/test.
 Spuštění testů jednorázově:
 ```bash
