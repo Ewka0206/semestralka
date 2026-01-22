@@ -61,9 +61,9 @@ Pozn.: konfigurace Vitestu používá jsdom a setupFiles: ./src/test/setup.ts.
 
 ## Data a persistence (LocalStorage)
 Aplikace ukládá data do LocalStorage (repo vrstva):
-uživatelé / session (auth)
-nabídky (user trips)
-rezervace (bookings)
+- uživatelé / session (auth)
+- nabídky (user trips)
+- rezervace (bookings)
 Pokud chceš aplikaci „vyčistit“, smaž LocalStorage pro daný origin (DevTools → Application → Local Storage).
 
 ## Obrázky (assets)
@@ -76,7 +76,7 @@ Pokud je imageUrl u tripu prázdné, používá se placeholder.
 
 ## Routy (přehled)
 Ve zkratce:
-- / – Domů (Discover)
+- / – Domů
 - /trips/:tripId – Detail plavby
 - /login, /register – Přihlášení / Registrace
 - /dashboard – Můj přehled (chráněné)
