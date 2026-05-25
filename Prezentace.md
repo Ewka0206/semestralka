@@ -57,6 +57,46 @@ Komunikace přes REST API, frontend posílá `X-User-Id` hlavičku pro identifik
 
 ---
 
+## Databázová vrstva
+
+Aplikace používá **MariaDB** přes **Spring Data JPA + Hibernate**. Schéma databáze vzniká automaticky – při každém startu backendu Hibernate porovná entity s tabulkami a provede potřebné změny (`ddl-auto=update`). Databázu není třeba zakládat ručně.
+
+### JPA entity
+
+| Třída | Tabulka | Klíčová pole |
+|-------|---------|--------------|
+| `User` | `users` | `id` (UUID), `email` (unique), `password` (BCrypt), `role` (`crew`/`captain`) |
+| `Trip` | `trips` | `id` (UUID), `title`, `location`, `country`, `type` (enum), `startDate`, `capacity`, `booked`, `ownerUserId` |
+| `Booking` | `bookings` | `id` (UUID), `tripId`, `userId`, `contactName`, `contactEmail`, `seats` |
+| `TripTypeDef` | `trip_type_def` | `type` (enum key), `label` (zobrazovaný text) |
+
+Primární klíče jsou UUID stringy generované v `@PrePersist`. Entity `User` a `Trip` mají také `@PreUpdate` pro automatickou aktualizaci `updatedAt`.
+
+### DataSeeder – ukázková data
+
+Při prvním startu vloží `DataSeeder` do DB 3 typy plavby a 20 ukázkových nabídek s obrázky. Při dalších startech data přeskočí (`tripRepo.count() > 0`).
+
+```java
+// backend/src/main/java/com/sailconnect/DataSeeder.java
+@Component
+public class DataSeeder implements ApplicationListener<ApplicationReadyEvent> {
+    @Override
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        if (tripRepo.count() > 0) return;   // idempotentní – spustí se jen jednou
+        seedTripTypes();
+        seedTrips();
+    }
+}
+```
+
+```properties
+# backend/src/main/resources/application.properties
+spring.datasource.url=jdbc:mariadb://localhost:3306/sailconnect?createDatabaseIfNotExist=true
+spring.jpa.hibernate.ddl-auto=update
+```
+
+---
+
 ## Ukázky kódu
 
 ### 1. Dvouvrstvá validace a error handling

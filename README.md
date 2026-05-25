@@ -126,6 +126,31 @@ java -jar backend/target/sailconnect-backend-0.0.1-SNAPSHOT.jar
 
 ---
 
+## Databáze
+
+Aplikace používá **MariaDB** (port 3306, databáze `sailconnect`). Schéma spravuje Hibernate – při každém startu backendu automaticky vytvoří nebo aktualizuje tabulky (`spring.jpa.hibernate.ddl-auto=update`). Databázi nemusíš zakládat ručně, stačí mít spuštěný MariaDB server.
+
+### JPA entity → tabulky
+
+| Java třída | Tabulka | Popis |
+|------------|---------|-------|
+| `User` | `users` | Uživatelský účet (jméno, email, BCrypt heslo, role `crew`/`captain`) |
+| `Trip` | `trips` | Nabídka plavby (destinace, termín, kapacita, rezervace, vlastník, obrázek) |
+| `Booking` | `bookings` | Rezervace míst na plavbě (kontaktní údaje, počet míst) |
+| `TripTypeDef` | `trip_type_def` | Číselník typů plavby (zobrazovaný popis pro enum hodnotu) |
+
+Každá entita má `@Entity` anotaci a primární klíč generovaný jako UUID string v `@PrePersist`.
+
+### Demo data (DataSeeder)
+
+Třída `DataSeeder` (`ApplicationListener<ApplicationReadyEvent>`) se spustí při prvním startu a vloží do DB:
+- **3 typy plavby** (RELAX, ADVENTURE, TRAINING) do `trip_type_def`
+- **20 ukázkových nabídek plaveb** s obrázky z `frontend/public/images/trips/`
+
+Při dalších startech data přeskočí (kontrola `tripRepo.count() > 0`).
+
+---
+
 ## Obrázky
 
 Demo data (DataSeeder) odkazují na statické obrázky v `frontend/public/images/trips/`.
