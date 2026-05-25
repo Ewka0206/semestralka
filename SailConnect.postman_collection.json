@@ -1,0 +1,635 @@
+{
+  "info": {
+    "name": "SailConnect API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Kompletní kolekce pro SailConnect REST API (http://localhost:8080)"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "userId",  "value": "" },
+    { "key": "tripId",  "value": "" },
+    { "key": "bookingId", "value": "" }
+  ],
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Registrace",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('userId', body.id);",
+                  "    pm.test('Registrace vrátila 201 a id', () => {",
+                  "        pm.expect(body.id).to.be.a('string');",
+                  "        pm.expect(body.email).to.exist;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Testovací Uživatel\",\n  \"email\": \"test@sailconnect.cz\",\n  \"password\": \"heslo123\",\n  \"role\": \"captain\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Přihlášení",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('userId', body.id);",
+                  "    pm.test('Login vrátil 200 a id', () => {",
+                  "        pm.expect(body.id).to.be.a('string');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@sailconnect.cz\",\n  \"password\": \"heslo123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Přihlášení – špatné heslo (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Špatné heslo vrátí 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.status).to.equal(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@sailconnect.cz\",\n  \"password\": \"spatneHeslo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrace – validace (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Prázdné tělo vrátí 400 s chybami', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.errors).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"neniEmail\",\n  \"password\": \"123\"\n}"
+            }
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Uživatelé",
+      "item": [
+        {
+          "name": "Detail uživatele",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí detail uživatele', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.equal(pm.collectionVariables.get('userId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/{{userId}}"
+          }
+        },
+        {
+          "name": "Úprava uživatele",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Úprava vrátí 200 s aktualizovanými daty', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.name).to.equal('Upravený Uživatel');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/users/{{userId}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{userId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Upravený Uživatel\",\n  \"email\": \"test@sailconnect.cz\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail uživatele – nenalezen (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Neexistující uživatel vrátí 404', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/neexistujici-id"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Typy plaveb",
+      "item": [
+        {
+          "name": "Seznam typů plaveb",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí neprázdný seznam typů', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an('array').and.not.empty;",
+                  "    pm.expect(body[0]).to.have.property('code');",
+                  "    pm.expect(body[0]).to.have.property('label');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/trip-types"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Plavby",
+      "item": [
+        {
+          "name": "Seznam všech plaveb",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí pole plaveb', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/trips"
+          }
+        },
+        {
+          "name": "Seznam plaveb podle vlastníka",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí pole (může být prázdné)', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/trips?owner={{userId}}",
+              "query": [{ "key": "owner", "value": "{{userId}}" }]
+            }
+          }
+        },
+        {
+          "name": "Vytvoření plavby",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('tripId', body.id);",
+                  "    pm.test('Vytvoření vrátilo 201 a id', () => {",
+                  "        pm.expect(body.id).to.be.a('string');",
+                  "        pm.expect(body.title).to.exist;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/trips",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{userId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Testovací plavba\",\n  \"location\": \"Korfu\",\n  \"country\": \"Řecko\",\n  \"type\": \"Relax\",\n  \"startDate\": \"2026-07-01\",\n  \"endDate\": \"2026-07-08\",\n  \"priceCzk\": 17000,\n  \"capacity\": 8,\n  \"booked\": 0,\n  \"skipperIncluded\": true,\n  \"highlights\": [\"Krásné zátoky\", \"4 kajuty\"],\n  \"description\": \"Pohodová plavba po Jónském moři.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail plavby",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí detail plavby', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.equal(pm.collectionVariables.get('tripId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/trips/{{tripId}}"
+          }
+        },
+        {
+          "name": "Úprava plavby",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Úprava vrátí 200 s novým názvem', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.title).to.equal('Upravená plavba');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/trips/{{tripId}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{userId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Upravená plavba\",\n  \"location\": \"Korfu\",\n  \"country\": \"Řecko\",\n  \"type\": \"Relax\",\n  \"startDate\": \"2026-07-01\",\n  \"endDate\": \"2026-07-08\",\n  \"priceCzk\": 18000,\n  \"capacity\": 8,\n  \"booked\": 0,\n  \"skipperIncluded\": true,\n  \"highlights\": [\"Krásné zátoky\"],\n  \"description\": \"Aktualizovaný popis.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail plavby – nenalezena (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Neexistující plavba vrátí 404', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/trips/neexistujici-id"
+          }
+        },
+        {
+          "name": "Smazání plavby",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Smazání vrátí 204', () => {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/trips/{{tripId}}",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Rezervace",
+      "item": [
+        {
+          "name": "Vytvoření rezervace",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Před spuštěním tohoto requestu je potřeba mít platné tripId.",
+                  "// Spusť nejdřív 'Vytvoření plavby' ve složce Plavby."
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    pm.collectionVariables.set('bookingId', body.id);",
+                  "    pm.test('Vytvoření rezervace vrátilo 201 a id', () => {",
+                  "        pm.expect(body.id).to.be.a('string');",
+                  "        pm.expect(body.tripId).to.exist;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/bookings",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{userId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seats\": 2,\n  \"contactName\": \"Testovací Jméno\",\n  \"contactEmail\": \"rezervace@test.cz\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Seznam rezervací (aktuálního uživatele)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí pole rezervací', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bookings",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }]
+          }
+        },
+        {
+          "name": "Detail rezervace",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Vrátí detail rezervace', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.equal(pm.collectionVariables.get('bookingId'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bookings/{{bookingId}}",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }]
+          }
+        },
+        {
+          "name": "Úprava rezervace",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Úprava vrátí 200 s novými daty', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.seats).to.equal(3);",
+                  "    pm.expect(body.contactName).to.equal('Nové Jméno');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/bookings/{{bookingId}}",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-User-Id", "value": "{{userId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tripId\": \"{{tripId}}\",\n  \"seats\": 3,\n  \"contactName\": \"Nové Jméno\",\n  \"contactEmail\": \"nove@test.cz\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Detail rezervace – nenalezena (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Neexistující rezervace vrátí 404', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/bookings/neexistujici-id",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }]
+          }
+        },
+        {
+          "name": "Zrušení rezervace",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Zrušení vrátí 204', () => {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/bookings/{{bookingId}}",
+            "header": [{ "key": "X-User-Id", "value": "{{userId}}" }]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Nahrání obrázku",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Upload vrátí 200 a url', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.url).to.include('/images/uploads/');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vyber soubor jpg/png/webp (max 10 MB)"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Nahrání obrázku – nepovolený formát (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Nepovolený formát vrátí 400', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.error).to.include('Povolené formáty');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/upload",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vyber soubor s příponou .gif nebo .pdf"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+
+  ]
+}
