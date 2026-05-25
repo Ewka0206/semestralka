@@ -66,9 +66,9 @@ Frontend běží na `http://127.0.0.1:5173`. Požadavky na `/api/**` jsou proxov
 ## Funkce
 
 - **Homepage**: seznam plaveb + filtr (destinace / země, typ plavby, datum, max cena) aktivovaný tlačítkem Hledat
-- **Detail plavby**: hero obrázek, popis, highlights, počet volných míst, rezervační formulář
+- **Detail plavby**: hero obrázek, popis, highlights, počet volných míst, rezervační formulář; vlastník nabídky může nabídku upravit nebo smazat, vlastní nabídku si nelze zarezervovat
 - **Vytvoření / editace nabídky**: formulář s nahráváním obrázku (jpg, png, webp)
-- **Můj přehled**: moje rezervace a nabídky s možností editace a smazání
+- **Můj přehled**: moje rezervace (detail, editace, zrušení) a moje nabídky (detail, editace, smazání)
 - **Auth**: registrace, přihlášení, odhlášení
 - **Profil**: detail + editace (jméno, email, role)
 - **Číselník typů plavby**: načítán z databáze (`trip_type_def`)
@@ -87,6 +87,7 @@ Frontend běží na `http://127.0.0.1:5173`. Požadavky na `/api/**` jsou proxov
 | PUT | `/api/trips/{id}` | Úprava nabídky |
 | DELETE | `/api/trips/{id}` | Smazání nabídky |
 | GET | `/api/bookings` | Seznam rezervací |
+| GET | `/api/bookings/{id}` | Detail rezervace |
 | POST | `/api/bookings` | Vytvoření rezervace |
 | PUT | `/api/bookings/{id}` | Úprava rezervace |
 | DELETE | `/api/bookings/{id}` | Zrušení rezervace |
@@ -99,20 +100,47 @@ Frontend běží na `http://127.0.0.1:5173`. Požadavky na `/api/**` jsou proxov
 
 ## Obrázky
 
-Statické obrázky plaveb jsou v `frontend/public/images/trips/` ve formátu `.webp`.
+Demo data (DataSeeder) odkazují na statické obrázky v `frontend/public/images/trips/`.
 
-Nahrané obrázky se ukládají do `frontend/public/images/uploads/`.
+Uživatelé nahrávají vlastní obrázky přes formulář – soubory se ukládají do `frontend/public/images/uploads/`. Povolené formáty: jpg, png, webp (max 10 MB).
 
 ---
 
 ## Testy
 
-Testy jsou v `frontend/src/test/`.
+### Frontend
+
+Testy jsou v `frontend/src/test/` (Vitest + jsdom). Celkem 5 souborů, 23 testů:
+
+| Soubor | Co testuje |
+|--------|------------|
+| `trips.repo.test.ts` | API volání repozitáře plaveb (`addUserTrip`, `getUserTrips`, `updateUserTrip`, `deleteUserTrip`) – `apiFetch` mockováno přes `vi.mock` |
+| `bookings.repo.test.ts` | API volání repozitáře rezervací (`addBooking`, `getBookings`, `updateBooking`, `deleteBooking`) – stejný přístup |
+| `trips.utils.test.ts` | Logika filtru plaveb (`applyTripFilters`) včetně vyhledávání podle země |
+| `createOffer.schema.test.ts` | Zod validace formuláře pro vytvoření/editaci nabídky |
+| `booking.schema.test.ts` | Zod validace formuláře pro rezervaci |
 
 ```powershell
 cd frontend
 npm run test:run    # jednorázově
 npm run test        # watch režim
+```
+
+### Backend
+
+Testy jsou v `backend/src/test/java/com/sailconnect/service/` (JUnit 5 + Mockito). Celkem 3 soubory, 23 testů:
+
+| Soubor | Co testuje |
+|--------|------------|
+| `AuthServiceTest.java` | Login (správné/špatné heslo, neznámý email), registrace (nový uživatel, duplicitní email, výchozí role), úprava profilu |
+| `TripServiceTest.java` | Výpis plaveb (všechny / filtr podle vlastníka), detail (nalezen / 404), úprava polí, smazání (existující / 404) |
+| `BookingServiceTest.java` | Výpis rezervací (všechny / filtr podle uživatele), detail (nalezen / 404), úprava kontaktu a počtu míst, smazání (existující / 404) |
+
+Repozitáře jsou mockované přes Mockito – databáze není potřeba.
+
+```powershell
+cd backend
+.\mvnw test
 ```
 
 ---
@@ -132,3 +160,4 @@ npm run test        # watch režim
 | `/bookings/:bookingId/edit` | Upravit rezervaci (chráněné) |
 | `/me` | Profil (chráněné) |
 | `/me/edit` | Upravit profil (chráněné) |
+| `*` | 404 – Stránka nenalezena |

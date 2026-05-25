@@ -1,8 +1,9 @@
 package com.sailconnect.controller;
 
-import com.sailconnect.dto.RegisterRequest;
+import com.sailconnect.dto.UpdateUserRequest;
 import com.sailconnect.dto.UserResponse;
 import com.sailconnect.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,7 +22,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public UserResponse updateUser(@PathVariable String id, @RequestBody RegisterRequest patch) {
+    public UserResponse updateUser(@PathVariable String id, @Valid @RequestBody UpdateUserRequest patch) {
         return authService.updateUser(id, patch);
     }
 }

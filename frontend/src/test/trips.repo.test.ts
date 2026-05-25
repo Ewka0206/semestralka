@@ -1,98 +1,70 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Trip } from "../features/trips/types";
-import { addUserTrip, getUserTrips, deleteUserTrip } from "../features/trips/repo";
-import { updateUserTrip } from "../features/trips/repo";
 
-describe("trips repo (LocalStorage)", () => {
+vi.mock("../lib/api", () => ({
+    apiFetch: vi.fn(),
+    authHeaders: vi.fn(() => ({ "X-User-Id": "u1" })),
+}));
+
+import { apiFetch } from "../lib/api";
+import { addUserTrip, getUserTrips, updateUserTrip, deleteUserTrip } from "../features/trips/repo";
+
+const mockApiFetch = vi.mocked(apiFetch);
+
+const trip: Trip = {
+    id: "t1",
+    title: "Test trip",
+    location: "Korfu",
+    country: "Řecko",
+    type: "Rekreace" as any,
+    startDate: "2026-06-06",
+    endDate: "2026-06-13",
+    priceCzk: 17000,
+    capacity: 8,
+    booked: 0,
+    skipperIncluded: true,
+    highlights: ["4 kajuty"],
+    description: "Pohodová plavba.",
+    ownerUserId: "u1",
+};
+
+describe("trips repo (API)", () => {
     beforeEach(() => {
-        localStorage.clear();
+        mockApiFetch.mockReset();
     });
 
-    it("addUserTrip uloží trip a getUserTrips ho vrátí", () => {
-        const t: Trip = {
-            id: "t1",
-            title: "Test trip",
-            location: "Korfu",
-            country: "Řecko",
-            type: "Rekreace" as any,
-            startDate: "2026-06-06",
-            endDate: "2026-06-13",
-            priceCzk: 17000,
-            capacity: 8,
-            booked: 0,
-            skipperIncluded: true,
-            highlights: ["A"],
-            description: "Popis",
-            ownerUserId: "u1",
-            imageUrl: "https://example.com/img.jpg" as any,
-        };
-
-        addUserTrip(t);
-
-        const all = getUserTrips();
-        expect(all).toHaveLength(1);
-        expect(all[0].id).toBe("t1");
-        expect(all[0].title).toBe("Test trip");
+    it("addUserTrip volá POST /trips a vrátí uložený trip", async () => {
+        mockApiFetch.mockResolvedValue(trip);
+        const result = await addUserTrip(trip);
+        expect(mockApiFetch).toHaveBeenCalledWith("/trips", expect.objectContaining({ method: "POST" }));
+        expect(result).toEqual(trip);
     });
 
-    it("deleteUserTrip odstraní trip", () => {
-        addUserTrip({
-            id: "t1",
-            title: "A",
-            location: "X",
-            country: "Y",
-            type: "Rekreace" as any,
-            startDate: "2026-06-06",
-            endDate: "2026-06-13",
-            priceCzk: 100,
-            capacity: 2,
-            booked: 0,
-            skipperIncluded: true,
-            highlights: [],
-            description: "—",
-            ownerUserId: "u1",
-        } as Trip);
-
-        deleteUserTrip("t1");
-        expect(getUserTrips()).toHaveLength(0);
+    it("getUserTrips volá GET /trips?owner=... když je předáno userId", async () => {
+        mockApiFetch.mockResolvedValue([trip]);
+        const result = await getUserTrips("u1");
+        expect(mockApiFetch).toHaveBeenCalledWith("/trips?owner=u1", expect.any(Object));
+        expect(result).toHaveLength(1);
+        expect(result[0].id).toBe("t1");
     });
 
-    it("updateUserTrip přepíše trip", () => {
-      addUserTrip({
-        id: "t1",
-        title: "Old",
-        location: "X",
-        country: "Y",
-        type: "Rekreace" as any,
-        startDate: "2026-06-06",
-        endDate: "2026-06-13",
-        priceCzk: 100,
-        capacity: 2,
-        booked: 0,
-        skipperIncluded: true,
-        highlights: [],
-        description: "—",
-        ownerUserId: "u1",
-      } as Trip);
+    it("getUserTrips volá GET /trips bez parametru když userId chybí", async () => {
+        mockApiFetch.mockResolvedValue([trip]);
+        await getUserTrips();
+        expect(mockApiFetch).toHaveBeenCalledWith("/trips", expect.any(Object));
+    });
 
-      updateUserTrip({
-        id: "t1",
-        title: "New",
-        location: "X",
-        country: "Y",
-        type: "Rekreace" as any,
-        startDate: "2026-06-06",
-        endDate: "2026-06-13",
-        priceCzk: 100,
-        capacity: 2,
-        booked: 0,
-        skipperIncluded: true,
-        highlights: [],
-        description: "—",
-        ownerUserId: "u1",
-      } as Trip);
+    it("updateUserTrip volá PUT /trips/:id a vrátí aktualizovaný trip", async () => {
+        const updated = { ...trip, title: "Nový název" };
+        mockApiFetch.mockResolvedValue(updated);
+        const result = await updateUserTrip(updated);
+        expect(mockApiFetch).toHaveBeenCalledWith("/trips/t1", expect.objectContaining({ method: "PUT" }));
+        expect(result.title).toBe("Nový název");
+    });
 
-      const all = getUserTrips();
-      expect(all[0].title).toBe("New");
+    it("deleteUserTrip volá DELETE /trips/:id", async () => {
+        mockApiFetch.mockResolvedValue(undefined);
+        await deleteUserTrip("t1");
+        expect(mockApiFetch).toHaveBeenCalledWith("/trips/t1", expect.objectContaining({ method: "DELETE" }));
     });
 });

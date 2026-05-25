@@ -5,6 +5,7 @@ import { getBookingById, deleteBooking } from "../features/bookings/repo";
 import { getTripById } from "../features/trips/repo";
 import type { Booking } from "../features/bookings/types";
 import type { Trip } from "../features/trips/types";
+import { NotFoundPage } from "./NotFoundPage";
 
 export function BookingDetailPage() {
     const { bookingId } = useParams();
@@ -26,13 +27,7 @@ export function BookingDetailPage() {
     }
 
     if (!booking) {
-        return (
-            <div className="container stack">
-                <h1>Booking not found</h1>
-                <p className="muted">Rezervace neexistuje.</p>
-                <Link to="/dashboard">← Zpět na Dashboard</Link>
-            </div>
-        );
+        return <NotFoundPage />;
     }
 
     async function handleCancel() {
@@ -43,7 +38,7 @@ export function BookingDetailPage() {
 
     return (
         <div className="container stack">
-            <h1>Booking detail</h1>
+            <h1>Detail rezervace</h1>
 
             <section className="card stack">
                 <div>

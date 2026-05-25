@@ -10,6 +10,7 @@ import { getCurrentUser } from "../features/auth/repo";
 import type { Trip } from "../features/trips/types";
 import type { SubmitHandler } from "react-hook-form";
 import { useTripTypes } from "../features/trips/useTripTypes";
+import { NotFoundPage } from "./NotFoundPage";
 
 export function TripDetailPage() {
     const { tripId } = useParams();
@@ -44,13 +45,7 @@ export function TripDetailPage() {
     }
 
     if (!trip) {
-        return (
-            <div className="container stack">
-                <h1>Trip not found</h1>
-                <p className="muted">Plavba „{tripId}" neexistuje.</p>
-                <Link to="/">← Zpět na Domovskou stránku</Link>
-            </div>
-        );
+        return <NotFoundPage />;
     }
 
     const imgSrc = trip.imageUrl ?? "/images/trips/placeholder_800.webp";

@@ -4,6 +4,7 @@ import com.sailconnect.dto.LoginRequest;
 import com.sailconnect.dto.RegisterRequest;
 import com.sailconnect.dto.UserResponse;
 import com.sailconnect.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +19,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public UserResponse login(@RequestBody LoginRequest req) {
+    public UserResponse login(@Valid @RequestBody LoginRequest req) {
         return authService.login(req);
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(@RequestBody RegisterRequest req) {
+    public UserResponse register(@Valid @RequestBody RegisterRequest req) {
         return authService.register(req);
     }
 }

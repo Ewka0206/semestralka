@@ -2,6 +2,7 @@ package com.sailconnect.service;
 
 import com.sailconnect.dto.LoginRequest;
 import com.sailconnect.dto.RegisterRequest;
+import com.sailconnect.dto.UpdateUserRequest;
 import com.sailconnect.dto.UserResponse;
 import com.sailconnect.model.User;
 import com.sailconnect.model.UserRole;
@@ -54,12 +55,13 @@ public class AuthService {
         );
     }
 
-    public UserResponse updateUser(String userId, RegisterRequest patch) {
+    public UserResponse updateUser(String userId, UpdateUserRequest patch) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         if (patch.name() != null) user.setName(patch.name().trim());
         if (patch.email() != null) user.setEmail(patch.email().trim().toLowerCase());
+        if (patch.password() != null) user.setPassword(encoder.encode(patch.password()));
         if (patch.role() != null) user.setRole(UserRole.fromJson(patch.role()));
 
         return UserResponse.from(userRepo.save(user));

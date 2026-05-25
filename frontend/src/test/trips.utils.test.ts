@@ -65,4 +65,31 @@ describe("applyTripFilters", () => {
         const out = applyTripFilters(trips, f);
         expect(out.map((t) => t.id)).toEqual(["2"]);
     });
+
+    it("filtruje podle země (q prohledává i country)", () => {
+        const f = { ...defaultTripFilters(), q: "Řecko" };
+        const out = applyTripFilters(trips, f);
+        expect(out).toHaveLength(2);
+    });
+
+    it("filtruje podle části názvu země case-insensitive", () => {
+        const tripWithDifferentCountry: Trip = {
+            id: "3",
+            title: "Chorvatsko tour",
+            location: "Split",
+            country: "Chorvatsko",
+            type: "Rekreace" as any,
+            startDate: "2026-07-01",
+            endDate: "2026-07-08",
+            priceCzk: 18000,
+            capacity: 6,
+            booked: 0,
+            skipperIncluded: true,
+            highlights: [],
+            description: "Plavba podél Dalmácie.",
+        };
+        const f = { ...defaultTripFilters(), q: "chorvatsko" };
+        const out = applyTripFilters([...trips, tripWithDifferentCountry], f);
+        expect(out.map((t) => t.id)).toEqual(["3"]);
+    });
 });

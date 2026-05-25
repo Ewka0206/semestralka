@@ -1,18 +1,14 @@
 package com.sailconnect.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record RegisterRequest(
-        @NotBlank(message = "Jméno je povinné")
+public record UpdateUserRequest(
         String name,
 
-        @NotBlank(message = "E-mail je povinný")
         @Email(message = "Neplatný formát e-mailu")
         String email,
 
-        @NotBlank(message = "Heslo je povinné")
         @Size(min = 6, message = "Heslo musí mít alespoň 6 znaků")
         String password,
 

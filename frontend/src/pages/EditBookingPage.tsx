@@ -9,6 +9,7 @@ import { getTripById } from "../features/trips/repo";
 import { FormError } from "../components/forms/FormError";
 import type { Booking } from "../features/bookings/types";
 import type { Trip } from "../features/trips/types";
+import { NotFoundPage } from "./NotFoundPage";
 
 export function EditBookingPage() {
     const { bookingId } = useParams();
@@ -38,13 +39,7 @@ export function EditBookingPage() {
     }
 
     if (!booking) {
-        return (
-            <div className="container stack">
-                <h1>Edit booking</h1>
-                <p className="muted">Rezervace neexistuje.</p>
-                <Link to="/dashboard">← Zpět na Dashboard</Link>
-            </div>
-        );
+        return <NotFoundPage />;
     }
 
     const onSubmit = async (values: BookingForm) => {

@@ -9,6 +9,7 @@ import { createOfferSchema, type CreateOfferForm } from "../features/trips/schem
 import { useTripTypes } from "../features/trips/useTripTypes";
 import { FormError } from "../components/forms/FormError";
 import { ImageUpload } from "../components/forms/ImageUpload";
+import { NotFoundPage } from "./NotFoundPage";
 
 export function EditOfferPage() {
     const { tripId } = useParams();
@@ -59,13 +60,7 @@ export function EditOfferPage() {
     }
 
     if (!trip) {
-        return (
-            <div className="container stack">
-                <h1>Edit offer</h1>
-                <p className="muted">Tuhle nabídku nelze upravit (neexistuje nebo není dostupná).</p>
-                <Link to="/dashboard">← Zpět na Dashboard</Link>
-            </div>
-        );
+        return <NotFoundPage />;
     }
 
     const onSubmit = async (values: CreateOfferForm) => {
