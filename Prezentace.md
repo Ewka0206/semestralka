@@ -43,7 +43,8 @@ Komunikace přes REST API, frontend posílá `X-User-Id` hlavičku pro identifik
 | Persistenec | Spring Data JPA + Hibernate, MariaDB |
 | Bezpečnost | Spring Security Crypto – BCrypt hashování hesel |
 | Validace | Jakarta Bean Validation (`@NotBlank`, `@Email`, `@Size`) |
-| Testy | JUnit 5 + Mockito (28 testů, bez DB) |
+| Error handling | `@RestControllerAdvice` – jednotný `ErrorResponse` JSON pro celé API |
+| Testy | JUnit 5 + Mockito (30 testů, bez DB) |
 
 ### Frontend
 | Vrstva | Technologie |
@@ -51,14 +52,29 @@ Komunikace přes REST API, frontend posílá `X-User-Id` hlavičku pro identifik
 | Jazyk / runtime | TypeScript, Node.js |
 | UI framework | React 19 + Vite |
 | Routing | React Router v6 |
-| Formuláře | React Hook Form + Zod (client-side validace) |
+| Formuláře | React Hook Form + Zod (client-side validace) + zobrazení API chyb |
 | Testy | Vitest + jsdom (23 testů) |
 
 ---
 
 ## Ukázky kódu
 
-### 1. Globální exception handler – jednotný formát chyb
+### 1. Dvouvrstvá validace a error handling
+
+Validace probíhá na dvou úrovních: **Zod na frontendu** (okamžitá zpětná vazba bez síťového požadavku) a **Bean Validation na backendu** (pojistka). Pokud API volání selže, uživatel vidí chybovou hlášku přímo u formuláře.
+
+```
+Uživatel odešle formulář
+  → Zod (frontend) zachytí prázdné pole / špatný formát → zobrazí chybu pod polem
+  → Pokud Zod projde, odešle se požadavek na backend
+      → @Valid + Bean Validation zachytí porušení pravidel → vrátí 400 s mapou chyb per-field
+      → Service vrátí 409 (duplicitní e-mail) / 401 (špatné heslo) → zobrazí se hláška
+      → Síťová / serverová chyba → "Nepodařilo se uložit. Zkuste to znovu."
+```
+
+---
+
+### 2. Globální exception handler – jednotný formát chyb
 
 Každá chyba v celé aplikaci vrací stejný JSON tvar. Validační chyby vrátí mapu polí.
 

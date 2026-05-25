@@ -84,6 +84,22 @@ class AuthServiceTest {
     }
 
     @Test
+    void login_nullEmail_hodi400() {
+        assertThatThrownBy(() -> authService.login(new LoginRequest(null, "heslo")))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(e -> ((ResponseStatusException) e).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void register_nullEmail_hodi400() {
+        assertThatThrownBy(() -> authService.register(new RegisterRequest("Jméno", null, "heslo123", "crew")))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(e -> ((ResponseStatusException) e).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
     void register_novyUzivatel_uloziaVrati() {
         when(userRepo.existsByEmailIgnoreCase("nova@email.cz")).thenReturn(false);
         when(encoder.encode("heslo123")).thenReturn("$2a$hashed_new");
