@@ -19,6 +19,7 @@ export function TripDetailPage() {
 
     const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
     const [done, setDone] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
     const tripTypes = useTripTypes();
     const typeLabel = tripTypes.find((t) => t.code === trip?.type)?.label ?? trip?.type ?? "";
 
@@ -58,20 +59,25 @@ export function TripDetailPage() {
     }
 
     const onBook: SubmitHandler<BookingForm> = async (values) => {
+        setApiError(null);
         const freeSeats = Math.max(0, trip!.capacity - (trip!.booked ?? 0));
         if (values.seats > freeSeats) {
             setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
         }
 
-        await addBooking({
-            tripId: trip!.id,
-            createdAt: new Date().toISOString(),
-            seats: values.seats,
-            contactName: values.contactName.trim(),
-            contactEmail: values.contactEmail.trim(),
-        });
-        setDone(true);
+        try {
+            await addBooking({
+                tripId: trip!.id,
+                createdAt: new Date().toISOString(),
+                seats: values.seats,
+                contactName: values.contactName.trim(),
+                contactEmail: values.contactEmail.trim(),
+            });
+            setDone(true);
+        } catch {
+            setApiError("Rezervaci se nepodařilo uložit. Zkuste to znovu.");
+        }
     };
 
     return (
@@ -149,6 +155,8 @@ export function TripDetailPage() {
                             <input type="number" min={1} max={Math.max(0, trip.capacity - (trip.booked ?? 0))} {...register("seats")} />
                             <FormError error={errors.seats} />
                         </label>
+
+                        {apiError && <p className="formError">{apiError}</p>}
 
                         <button className="btn" type="submit" disabled={isSubmitting}>
                             Rezervovat

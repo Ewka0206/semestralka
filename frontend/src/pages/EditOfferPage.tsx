@@ -15,6 +15,7 @@ export function EditOfferPage() {
     const { tripId } = useParams();
     const nav = useNavigate();
     const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
+    const [apiError, setApiError] = useState<string | null>(null);
     const tripTypes = useTripTypes();
 
     const form = useForm<CreateOfferForm>({
@@ -64,28 +65,33 @@ export function EditOfferPage() {
     }
 
     const onSubmit = async (values: CreateOfferForm) => {
-        const parsedHighlights = values.highlightsText
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean);
+        setApiError(null);
+        try {
+            const parsedHighlights = values.highlightsText
+                .split("\n")
+                .map((s) => s.trim())
+                .filter(Boolean);
 
-        const updated: Trip = {
-            ...trip,
-            title: values.title.trim(),
-            location: values.location.trim(),
-            country: values.country.trim() || "—",
-            type: values.type,
-            startDate: values.startDate,
-            endDate: values.endDate,
-            priceCzk: values.priceCzk,
-            capacity: values.capacity,
-            highlights: parsedHighlights.length ? parsedHighlights : trip.highlights ?? [],
-            description: values.description.trim() || "—",
-            imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
-        };
+            const updated: Trip = {
+                ...trip,
+                title: values.title.trim(),
+                location: values.location.trim(),
+                country: values.country.trim() || "—",
+                type: values.type,
+                startDate: values.startDate,
+                endDate: values.endDate,
+                priceCzk: values.priceCzk,
+                capacity: values.capacity,
+                highlights: parsedHighlights.length ? parsedHighlights : trip.highlights ?? [],
+                description: values.description.trim() || "—",
+                imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
+            };
 
-        await updateUserTrip(updated);
-        nav(`/trips/${trip.id}`);
+            await updateUserTrip(updated);
+            nav(`/trips/${trip.id}`);
+        } catch {
+            setApiError("Nepodařilo se uložit změny. Zkuste to znovu.");
+        }
     };
 
     const {
@@ -177,6 +183,8 @@ export function EditOfferPage() {
                         onChange={(url) => setValue("imageUrl", url)}
                     />
                 </div>
+
+                {apiError && <p className="formError">{apiError}</p>}
 
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                     <button className="btn" type="submit" disabled={isSubmitting}>

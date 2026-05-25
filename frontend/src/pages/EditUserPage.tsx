@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -25,6 +25,7 @@ export function EditUserPage() {
 
     const { user, updateUser } = useAuth();
     const initialized = useRef(false);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<EditUserForm>({
         resolver: zodResolver(editUserSchema),
@@ -56,12 +57,17 @@ export function EditUserPage() {
     }
 
     const onSubmit = async (values: EditUserForm) => {
-        await updateUser({
-            name: values.name.trim(),
-            email: values.email.trim(),
-            role: values.role,
-        });
-        nav("/me");
+        setApiError(null);
+        try {
+            await updateUser({
+                name: values.name.trim(),
+                email: values.email.trim(),
+                role: values.role,
+            });
+            nav("/me");
+        } catch {
+            setApiError("Nepodařilo se uložit změny. Zkuste to znovu.");
+        }
     };
 
     const {
@@ -98,6 +104,8 @@ export function EditUserPage() {
                     </select>
                     <FormError error={errors.role} />
                 </label>
+
+                {apiError && <p className="formError">{apiError}</p>}
 
                 <div className="actionsRow">
                     <button className="btn" type="submit" disabled={isSubmitting}>

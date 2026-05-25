@@ -17,6 +17,7 @@ export function EditBookingPage() {
 
     const [booking, setBooking] = useState<Booking | null | undefined>(undefined);
     const [trip, setTrip] = useState<Trip | null>(null);
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<BookingForm>({
         resolver: zodResolver(bookingSchema) as any,
@@ -43,20 +44,24 @@ export function EditBookingPage() {
     }
 
     const onSubmit = async (values: BookingForm) => {
+        setApiError(null);
         if (trip && values.seats > trip.capacity) {
             form.setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
         }
 
-        const updated: Booking = {
-            ...booking,
-            contactName: values.contactName.trim(),
-            contactEmail: values.contactEmail.trim(),
-            seats: values.seats,
-        };
-
-        await updateBooking(updated);
-        nav(`/bookings/${booking.id}`);
+        try {
+            const updated: Booking = {
+                ...booking,
+                contactName: values.contactName.trim(),
+                contactEmail: values.contactEmail.trim(),
+                seats: values.seats,
+            };
+            await updateBooking(updated);
+            nav(`/bookings/${booking.id}`);
+        } catch {
+            setApiError("Nepodařilo se uložit změny. Zkuste to znovu.");
+        }
     };
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = form;
@@ -88,6 +93,8 @@ export function EditBookingPage() {
                         <input type="number" min={1} max={trip?.capacity ?? undefined} {...register("seats")} />
                         <FormError error={errors.seats} />
                     </label>
+
+                    {apiError && <p className="formError">{apiError}</p>}
 
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                         <button className="btn" type="submit" disabled={isSubmitting}>Uložit</button>

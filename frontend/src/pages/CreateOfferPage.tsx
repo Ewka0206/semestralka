@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +15,8 @@ export function CreateOfferPage() {
     const nav = useNavigate();
     const user = getCurrentUser();
     const tripTypes = useTripTypes();
+
+    const [apiError, setApiError] = useState<string | null>(null);
 
     const {
         register,
@@ -39,33 +42,38 @@ export function CreateOfferPage() {
     });
 
     const onSubmit = async (values: CreateOfferForm) => {
-        const parsedHighlights = values.highlightsText
-            .split("\n")
-            .map((s) => s.trim())
-            .filter(Boolean);
+        setApiError(null);
+        try {
+            const parsedHighlights = values.highlightsText
+                .split("\n")
+                .map((s) => s.trim())
+                .filter(Boolean);
 
-        const highlights =
-            parsedHighlights.length > 0 ? parsedHighlights : ["New offer", "Custom route", "Friendly crew"];
+            const highlights =
+                parsedHighlights.length > 0 ? parsedHighlights : ["New offer", "Custom route", "Friendly crew"];
 
-        const tripData: Omit<Trip, "id"> = {
-            title: values.title.trim(),
-            imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
-            location: values.location.trim(),
-            country: values.country.trim() || "—",
-            type: values.type,
-            startDate: values.startDate,
-            endDate: values.endDate,
-            priceCzk: values.priceCzk,
-            capacity: values.capacity,
-            booked: 0,
-            skipperIncluded: true,
-            highlights,
-            description: values.description.trim() || "—",
-            ownerUserId: user?.id,
-        };
+            const tripData: Omit<Trip, "id"> = {
+                title: values.title.trim(),
+                imageUrl: values.imageUrl?.trim() ? values.imageUrl.trim() : undefined,
+                location: values.location.trim(),
+                country: values.country.trim() || "—",
+                type: values.type,
+                startDate: values.startDate,
+                endDate: values.endDate,
+                priceCzk: values.priceCzk,
+                capacity: values.capacity,
+                booked: 0,
+                skipperIncluded: true,
+                highlights,
+                description: values.description.trim() || "—",
+                ownerUserId: user?.id,
+            };
 
-        const created = await addUserTrip(tripData);
-        nav(`/trips/${created.id}`);
+            const created = await addUserTrip(tripData);
+            nav(`/trips/${created.id}`);
+        } catch {
+            setApiError("Nepodařilo se uložit nabídku. Zkuste to znovu.");
+        }
     };
 
     return (
@@ -149,6 +157,8 @@ export function CreateOfferPage() {
                         onChange={(url) => setValue("imageUrl", url)}
                     />
                 </div>
+
+                {apiError && <p className="formError">{apiError}</p>}
 
                 <button className="btn" type="submit" disabled={isSubmitting}>
                     Uložit
