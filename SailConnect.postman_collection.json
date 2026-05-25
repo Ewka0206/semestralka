@@ -99,13 +99,13 @@
           }
         },
         {
-          "name": "Registrace – validace (400)",
+          "name": "Registrace – chybějící pole (400)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Chybějící povinná pole vrátí 400 s mapou chyb', () => {",
+                  "pm.test('Prázdné tělo vrátí 400 s mapou chyb', () => {",
                   "    pm.response.to.have.status(400);",
                   "    const body = pm.response.json();",
                   "    pm.expect(body.errors).to.be.an('object');",
@@ -122,6 +122,59 @@
             "body": {
               "mode": "raw",
               "raw": "{}"
+            }
+          }
+        },
+        {
+          "name": "Registrace – neplatný e-mail (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Neplatný formát e-mailu vrátí 400 s chybou na poli email', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.errors).to.have.property('email');",
+                  "    pm.expect(body.errors.email).to.include('e-mailu');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"email\": \"neniEmail\",\n  \"password\": \"heslo123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login – neplatný e-mail (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Neplatný formát e-mailu při loginu vrátí 400', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.errors).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"neniEmail\",\n  \"password\": \"heslo123\"\n}"
             }
           }
         }
@@ -272,10 +325,7 @@
           ],
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/trips?owner={{userId}}",
-              "query": [{ "key": "owner", "value": "{{userId}}" }]
-            }
+            "url": "{{baseUrl}}/trips?owner={{userId}}"
           }
         },
         {

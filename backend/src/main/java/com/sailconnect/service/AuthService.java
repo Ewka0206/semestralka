@@ -24,6 +24,10 @@ public class AuthService {
     }
 
     public UserResponse login(LoginRequest req) {
+        if (req.email() == null || req.password() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "E-mail a heslo jsou povinné.");
+        }
+
         User user = userRepo.findByEmailIgnoreCase(req.email().trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
 
@@ -35,6 +39,10 @@ public class AuthService {
     }
 
     public UserResponse register(RegisterRequest req) {
+        if (req.email() == null || req.name() == null || req.password() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Jméno, e-mail a heslo jsou povinné.");
+        }
+
         if (userRepo.existsByEmailIgnoreCase(req.email().trim())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
