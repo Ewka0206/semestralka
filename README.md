@@ -63,6 +63,34 @@ Frontend běží na `http://127.0.0.1:5173`. Požadavky na `/api/**` jsou proxov
 
 ---
 
+## Sestavení (build)
+
+### Frontend
+
+```powershell
+cd frontend
+npm run build
+```
+
+Výstup je ve složce `frontend/dist/`. Statické soubory lze nasadit na libovolný webový server nebo CDN.
+
+### Backend
+
+```powershell
+cd backend
+.\mvnw package -DskipTests
+```
+
+Výstupní JAR je `backend/target/sailconnect-backend-0.0.1-SNAPSHOT.jar`. Spuštění:
+
+```powershell
+java -jar backend/target/sailconnect-backend-0.0.1-SNAPSHOT.jar
+```
+
+> **Poznámka:** V produkčním nasazení je potřeba upravit `application.properties` – zejména databázové přihlašovací údaje a cestu pro upload obrázků (`upload.dir`).
+
+---
+
 ## Funkce
 
 - **Homepage**: seznam plaveb + filtr (destinace / země, typ plavby, datum, max cena) aktivovaný tlačítkem Hledat
@@ -128,13 +156,14 @@ npm run test        # watch režim
 
 ### Backend
 
-Testy jsou v `backend/src/test/java/com/sailconnect/service/` (JUnit 5 + Mockito). Celkem 3 soubory, 23 testů:
+Testy jsou v `backend/src/test/java/com/sailconnect/` (JUnit 5 + Mockito). Celkem 4 soubory, 28 testů:
 
 | Soubor | Co testuje |
 |--------|------------|
-| `AuthServiceTest.java` | Login (správné/špatné heslo, neznámý email), registrace (nový uživatel, duplicitní email, výchozí role), úprava profilu |
-| `TripServiceTest.java` | Výpis plaveb (všechny / filtr podle vlastníka), detail (nalezen / 404), úprava polí, smazání (existující / 404) |
-| `BookingServiceTest.java` | Výpis rezervací (všechny / filtr podle uživatele), detail (nalezen / 404), úprava kontaktu a počtu míst, smazání (existující / 404) |
+| `service/AuthServiceTest.java` | Login (správné/špatné heslo, neznámý email), registrace (nový uživatel, duplicitní email, výchozí role), úprava profilu |
+| `service/TripServiceTest.java` | Výpis plaveb (všechny / filtr podle vlastníka), detail (nalezen / 404), úprava polí, smazání (existující / 404) |
+| `service/BookingServiceTest.java` | Výpis rezervací (všechny / filtr podle uživatele), detail (nalezen / 404), úprava kontaktu a počtu míst, smazání (existující / 404) |
+| `exception/GlobalExceptionHandlerTest.java` | Bean Validation chyby (400 s mapou polí), ResponseStatusException, IllegalArgumentException, generická 500 |
 
 Repozitáře jsou mockované přes Mockito – databáze není potřeba.
 
@@ -142,6 +171,19 @@ Repozitáře jsou mockované přes Mockito – databáze není potřeba.
 cd backend
 .\mvnw test
 ```
+
+### API testy – Postman
+
+Kolekce `SailConnect.postman_collection.json` (v kořeni repozitáře) pokrývá všech 16 endpointů včetně chybových stavů.
+
+**Import:** Postman → Import → vybrat soubor `SailConnect.postman_collection.json`
+
+Kolekce používá proměnné `baseUrl` (výchozí `http://localhost:8080/api`), `userId`, `tripId` a `bookingId`. Proměnné `userId`, `tripId` a `bookingId` se automaticky plní z odpovědí – pro plný průchod spouštěj requesty v tomto pořadí:
+
+1. Auth / Registrace
+2. Plavby / Vytvoření plavby
+3. Rezervace / Vytvoření rezervace
+4. zbytek libovolně
 
 ---
 
