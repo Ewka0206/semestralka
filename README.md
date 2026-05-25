@@ -99,10 +99,7 @@ Frontend běží na `http://127.0.0.1:5173`. Požadavky na `/api/**` jsou proxov
 
 ## Obrázky
 
-Statické obrázky plaveb jsou v `frontend/public/images/trips/` ve třech rozlišeních:
-```
-nazev_400.webp  / nazev_800.webp  / nazev_1200.webp
-```
+Statické obrázky plaveb jsou v `frontend/public/images/trips/` ve formátu `.webp`.
 
 Nahrané obrázky se ukládají do `frontend/public/images/uploads/`.
 

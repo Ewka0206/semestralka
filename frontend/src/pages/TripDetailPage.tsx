@@ -53,10 +53,7 @@ export function TripDetailPage() {
         );
     }
 
-    const rawUrl = trip.imageUrl ?? "/images/trips/placeholder";
-    const hasExt = /\.\w{2,5}$/.test(rawUrl);
-    const imgSrc = hasExt ? rawUrl : `${rawUrl}_1200.webp`;
-    const imgSrcSet = hasExt ? undefined : `${rawUrl}_400.webp 400w, ${rawUrl}_800.webp 800w, ${rawUrl}_1200.webp 1200w`;
+    const imgSrc = trip.imageUrl ?? "/images/trips/placeholder_800.webp";
 
     async function handleDelete(tripIdToDelete: string) {
         if (!isOwnOffer) return;
@@ -94,8 +91,6 @@ export function TripDetailPage() {
 
             <div className="tripHeroWrap">
                 <img src={imgSrc}
-                     srcSet={imgSrcSet}
-                     sizes="(max-width: 720px) 92vw, (max-width: 1024px) 45vw, 340px"
                      alt={trip.title}
                      className="tripHero"
                      fetchPriority="high"
