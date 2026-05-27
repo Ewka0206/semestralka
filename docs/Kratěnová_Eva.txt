@@ -1,0 +1,3 @@
+Aplikace Sail Connect – najdi plavbu
+
+Sail Connect je aplikace propojující námořní kapitány a zájemce z řad posádek. Umožňuje vyhledávání podle destinací, termínů a typu hledané nabídky. Uživatelé pro její použití musí provést registraci a založit si účet. Poté mohou vkládat vlastní nabídky a provádět jejich správu nebo provádět rezervace. V první fázi je plánovaná pouze česká jazyková mutace.
