@@ -30,7 +30,24 @@ export function getStoredUserId(): string | null {
     }
 }
 
+/** Vrátí uložený JWT token z localStorage. */
+export function getStoredToken(): string | null {
+    try {
+        const raw = localStorage.getItem("sailconnect_session_v1");
+        if (!raw) return null;
+        return JSON.parse(raw).token ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Sestaví hlavičky pro autentizované požadavky.
+ * Primárně posílá JWT Bearer token; X-User-Id jako fallback pro starší sessions.
+ */
 export function authHeaders(): Record<string, string> {
+    const token = getStoredToken();
+    if (token) return { "Authorization": `Bearer ${token}` };
     const id = getStoredUserId();
     return id ? { "X-User-Id": id } : {};
 }

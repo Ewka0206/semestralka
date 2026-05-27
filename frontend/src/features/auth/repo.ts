@@ -2,7 +2,9 @@ import { apiFetch, authHeaders } from "../../lib/api";
 import type { Session, User } from "./types";
 
 const SESSION_KEY = "sailconnect_session_v1";
-const USER_KEY = "sailconnect_user_v1";
+const USER_KEY    = "sailconnect_user_v1";
+
+// ── Lokální úložiště ──────────────────────────────────────────────────────────
 
 function setStoredUser(user: User | null): void {
     if (user) {
@@ -39,31 +41,46 @@ export function getCurrentUser(): User | null {
     }
 }
 
+// ── API volání ────────────────────────────────────────────────────────────────
+
+/** LoginResponse odpověď ze serveru (nadmnožina User + JWT token). */
+type LoginResponse = User & { token: string };
+
+/**
+ * Přihlásí uživatele – uloží JWT token a data uživatele do localStorage.
+ * Token se následně posílá v hlavičce Authorization: Bearer.
+ */
 export async function login(email: string, password: string): Promise<User> {
-    const user = await apiFetch<User>("/auth/login", {
+    const res = await apiFetch<LoginResponse>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
     });
-    setStoredUser(user);
-    setSession({ userId: user.id, createdAt: new Date().toISOString() });
-    return user;
+    const { token, ...user } = res;
+    setStoredUser(user as User);
+    setSession({ userId: user.id, token, createdAt: new Date().toISOString() });
+    return user as User;
 }
 
+/**
+ * Registruje nového uživatele – server rovnou vrátí token.
+ */
 export async function register(data: {
     name: string;
     email: string;
     password: string;
     role: string;
 }): Promise<User> {
-    const user = await apiFetch<User>("/auth/register", {
+    const res = await apiFetch<LoginResponse>("/auth/register", {
         method: "POST",
         body: JSON.stringify(data),
     });
-    setStoredUser(user);
-    setSession({ userId: user.id, createdAt: new Date().toISOString() });
-    return user;
+    const { token, ...user } = res;
+    setStoredUser(user as User);
+    setSession({ userId: user.id, token, createdAt: new Date().toISOString() });
+    return user as User;
 }
 
+/** Aktualizuje profil přihlášeného uživatele. */
 export async function updateCurrentUser(patch: Partial<User>): Promise<User | null> {
     const session = getSession();
     if (!session) return null;
@@ -76,6 +93,7 @@ export async function updateCurrentUser(patch: Partial<User>): Promise<User | nu
     return user;
 }
 
+/** Odhlásí uživatele – vymaže session i uložená data. */
 export function logout(): void {
     setSession(null);
     setStoredUser(null);

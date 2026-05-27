@@ -1,5 +1,6 @@
 package com.sailconnect.service;
 
+import com.sailconnect.dto.TripRequest;
 import com.sailconnect.model.Trip;
 import com.sailconnect.model.TripType;
 import com.sailconnect.repository.TripRepository;
@@ -9,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -18,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -87,6 +93,71 @@ class TripServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(e -> ((ResponseStatusException) e).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void search_sKeywordem_vratiStrankovanyVysledek() {
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Trip> page = new PageImpl<>(List.of(trip), pageable, 1);
+        when(tripRepo.searchAvailable(eq("korfu"), eq("RELAX"), eq(pageable))).thenReturn(page);
+
+        Page<Trip> result = tripService.search("korfu", "Relax", pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getTotalPages()).isEqualTo(1);
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Korfu – rekreace");
+        verify(tripRepo).searchAvailable("korfu", "RELAX", pageable);
+    }
+
+    @Test
+    void search_prazdnyKeyword_pouzijePrazdnyRetezec() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trip> emptyPage = Page.empty(pageable);
+        when(tripRepo.searchAvailable(eq(""), eq(""), eq(pageable))).thenReturn(emptyPage);
+
+        Page<Trip> result = tripService.search(null, null, pageable);
+
+        assertThat(result.getTotalElements()).isEqualTo(0);
+        verify(tripRepo).searchAvailable("", "", pageable);
+    }
+
+    @Test
+    void create_novaPlavba_ulozisSpravnymOwnerem() {
+        TripRequest req = new TripRequest(
+                "Sicílie – sopky v moři", "Palermo", "Itálie",
+                TripType.ADVENTURE, "2026-06-27", "2026-07-04",
+                19500, 8, 0, true,
+                java.util.List.of("Stromboli", "Aeolské ostrovy"), "Plavba kolem Sicílie.", null, null);
+
+        when(tripRepo.save(any(Trip.class))).thenAnswer(inv -> {
+            Trip t = inv.getArgument(0);
+            t.setId("t-new");
+            return t;
+        });
+
+        Trip result = tripService.create(req, "u1");
+
+        assertThat(result.getId()).isEqualTo("t-new");
+        assertThat(result.getTitle()).isEqualTo("Sicílie – sopky v moři");
+        assertThat(result.getOwnerUserId()).isEqualTo("u1");
+        assertThat(result.getType()).isEqualTo(TripType.ADVENTURE);
+        verify(tripRepo).save(any(Trip.class));
+    }
+
+    @Test
+    void create_ownerIdNull_pouzijezTela() {
+        TripRequest req = new TripRequest(
+                "Test", "Test", "CZ",
+                TripType.RELAX, "2026-01-01", "2026-01-08",
+                10000, 4, 0, false,
+                null, null, null, "owner-from-body");
+
+        when(tripRepo.save(any(Trip.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Trip result = tripService.create(req, null);
+
+        assertThat(result.getOwnerUserId()).isEqualTo("owner-from-body");
     }
 
     @Test

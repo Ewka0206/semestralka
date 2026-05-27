@@ -12,5 +12,6 @@ export type User = {
 
 export type Session = {
     userId: string;
-    createdAt: string; // ISO
+    token: string;      // JWT Bearer token
+    createdAt: string;  // ISO
 };
