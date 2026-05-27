@@ -7,7 +7,8 @@ Sail Connect je fullstack webová aplikace propojující kapitány a posádku. U
 ```
 semestralka/
 ├── backend/   – Spring Boot REST API (Java 21)
-└── frontend/  – React + TypeScript SPA (Vite)
+├── frontend/  – React + TypeScript SPA (Vite)
+└── docs/      – Projektová dokumentace
 ```
 
 ## Tech stack
@@ -143,7 +144,7 @@ Každá entita má `@Entity` anotaci a primární klíč generovaný jako UUID s
 
 ### Demo data (DataSeeder)
 
-Třída `DataSeeder` (`ApplicationListener<ApplicationReadyEvent>`) se spustí při prvním startu a vloží do DB:
+Třída `DataSeeder` (implementuje `CommandLineRunner`) se spustí při prvním startu a vloží do DB:
 - **3 typy plavby** (RELAX, ADVENTURE, TRAINING) do `trip_type_def`
 - **20 ukázkových nabídek plaveb** s obrázky z `frontend/public/images/trips/`
 
@@ -209,6 +210,20 @@ Kolekce používá proměnné `baseUrl` (výchozí `http://localhost:8080/api`),
 2. Plavby / Vytvoření plavby
 3. Rezervace / Vytvoření rezervace
 4. zbytek libovolně
+
+---
+
+## Dokumentace
+
+Složka `docs/` obsahuje podrobnou projektovou dokumentaci:
+
+| Soubor | Popis |
+|--------|-------|
+| [`docs/uzivatelska_prirucka.md`](docs/uzivatelska_prirucka.md) | Uživatelská příručka – registrace, přihlášení, prohlížení plaveb, rezervace, správa nabídek a profilu |
+| [`docs/administratorska_prirucka.md`](docs/administratorska_prirucka.md) | Administrátorská příručka – instalace, konfigurace, databáze, nasazení do produkce, řešení problémů |
+| [`docs/api_schemas.md`](docs/api_schemas.md) | JSON schémata všech REST API endpointů včetně příkladů požadavků a odpovědí |
+| [`docs/SailConnect_SRS.docx`](docs/SailConnect_SRS.docx) | Specifikace softwarových požadavků (SRS) |
+| [`docs/produktovy_list.pdf`](docs/produktovy_list.pdf) | Produktový list aplikace |
 
 ---
 
