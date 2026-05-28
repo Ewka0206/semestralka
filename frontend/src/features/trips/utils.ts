@@ -3,8 +3,9 @@ import type { Trip, TripType } from "./types.ts";
 export type TripFiltersState = {
     q: string;
     type: TripType | "Any";
-    dateFrom: string; // "" nebo YYYY-MM-DD
-    dateTo: string;   // "" nebo YYYY-MM-DD
+    country: string;       // "" = vše, jinak přesný název státu
+    dateFrom: string;      // "" nebo YYYY-MM-DD
+    dateTo: string;        // "" nebo YYYY-MM-DD
     maxPriceCzk: number | null;
 };
 
@@ -12,6 +13,7 @@ export function defaultTripFilters(): TripFiltersState {
     return {
         q: "",
         type: "Any",
+        country: "",
         dateFrom: "",
         dateTo: "",
         maxPriceCzk: null,
@@ -48,6 +50,10 @@ export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
         }
 
         if (f.type !== "Any" && t.type !== f.type) {
+            return false;
+        }
+
+        if (f.country && t.country !== f.country) {
             return false;
         }
 

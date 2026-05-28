@@ -1,4 +1,5 @@
 import { useTripTypes } from "./useTripTypes";
+import { useCountries } from "./useCountries";
 import type { TripFiltersState } from "./utils.ts";
 
 type Props = {
@@ -10,17 +11,17 @@ type Props = {
 
 export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
     const tripTypes = useTripTypes();
-    const idQ = "tripFilters-q";
-    const idType = "tripFilters-type";
-    const idFrom = "tripFilters-from";
-    const idTo = "tripFilters-to";
-    const idPrice = "tripFilters-price";
+    const countries = useCountries();
+    const idQ       = "tripFilters-q";
+    const idCountry = "tripFilters-country";
+    const idType    = "tripFilters-type";
+    const idFrom    = "tripFilters-from";
+    const idTo      = "tripFilters-to";
+    const idPrice   = "tripFilters-price";
 
     return (
         <section className="card stack" aria-labelledby="tripFiltersTitle">
-            <h2 id="tripFiltersTitle" className="sectionTitle">
-                Filtr
-            </h2>
+            <h2 id="tripFiltersTitle" className="sectionTitle">Filtr</h2>
 
             <form
                 className="grid2"
@@ -34,10 +35,24 @@ export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
                         id={idQ}
                         value={value.q}
                         onChange={(e) => onChange({ ...value, q: e.target.value })}
-                        placeholder="Korfu / Athény / Skotsko / Severní moře…"
+                        placeholder="Korfu / Athény / Skotsko…"
                         autoComplete="off"
                         inputMode="search"
                     />
+                </div>
+
+                <div className="field">
+                    <label htmlFor={idCountry}>Stát</label>
+                    <select
+                        id={idCountry}
+                        value={value.country}
+                        onChange={(e) => onChange({ ...value, country: e.target.value })}
+                    >
+                        <option value="">Všechny státy</option>
+                        {countries.map((c) => (
+                            <option key={c.code} value={c.name}>{c.name}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="field">
@@ -51,9 +66,7 @@ export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
                     >
                         <option value="Any">Cokoliv</option>
                         {tripTypes.map((t) => (
-                            <option key={t.code} value={t.code}>
-                                {t.label}
-                            </option>
+                            <option key={t.code} value={t.code}>{t.label}</option>
                         ))}
                     </select>
                 </div>
@@ -80,7 +93,7 @@ export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
                 </div>
 
                 <div className="field">
-                    <label htmlFor={idPrice}>Maximální cena (CZK)</label>
+                    <label htmlFor={idPrice}>Maximální cena (Kč)</label>
                     <input
                         id={idPrice}
                         type="number"

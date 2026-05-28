@@ -10,11 +10,13 @@ import { FormError } from "../components/forms/FormError";
 import { ImageUpload } from "../components/forms/ImageUpload";
 import { getCurrentUser } from "../features/auth/repo";
 import { useTripTypes } from "../features/trips/useTripTypes";
+import { useCountries } from "../features/trips/useCountries";
 
 export function CreateOfferPage() {
     const nav = useNavigate();
     const user = getCurrentUser();
     const tripTypes = useTripTypes();
+    const countries = useCountries();
 
     const [apiError, setApiError] = useState<string | null>(null);
 
@@ -103,7 +105,12 @@ export function CreateOfferPage() {
                     </label>
                     <label className="field">
                         <span>Stát</span>
-                        <input {...register("country")} placeholder="Řecko" />
+                        <select {...register("country")}>
+                            <option value="">— vyberte stát —</option>
+                            {countries.map((c) => (
+                                <option key={c.code} value={c.name}>{c.name}</option>
+                            ))}
+                        </select>
                     </label>
                 </div>
 

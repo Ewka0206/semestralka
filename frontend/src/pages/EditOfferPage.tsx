@@ -7,6 +7,7 @@ import { getTripById, updateUserTrip } from "../features/trips/repo";
 import type { Trip } from "../features/trips/types";
 import { createOfferSchema, type CreateOfferForm } from "../features/trips/schemas";
 import { useTripTypes } from "../features/trips/useTripTypes";
+import { useCountries } from "../features/trips/useCountries";
 import { FormError } from "../components/forms/FormError";
 import { ImageUpload } from "../components/forms/ImageUpload";
 import { NotFoundPage } from "./NotFoundPage";
@@ -17,6 +18,7 @@ export function EditOfferPage() {
     const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
     const [apiError, setApiError] = useState<string | null>(null);
     const tripTypes = useTripTypes();
+    const countries = useCountries();
 
     const form = useForm<CreateOfferForm>({
         resolver: zodResolver(createOfferSchema) as any,
@@ -110,7 +112,12 @@ export function EditOfferPage() {
                     </label>
                     <label className="field">
                         <span>Stát</span>
-                        <input {...register("country")} />
+                        <select {...register("country")}>
+                            <option value="">— vyberte stát —</option>
+                            {countries.map((c) => (
+                                <option key={c.code} value={c.name}>{c.name}</option>
+                            ))}
+                        </select>
                     </label>
                 </div>
 

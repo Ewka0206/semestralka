@@ -70,6 +70,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST,  "/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET,   "/api/trips/**").permitAll()
                 .requestMatchers(HttpMethod.GET,   "/api/trip-types").permitAll()
+                .requestMatchers(HttpMethod.GET,   "/api/countries").permitAll()
 
                 // Swagger UI + OpenAPI
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html",
