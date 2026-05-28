@@ -24,7 +24,8 @@ semestralka/
 - Java 21 + Spring Boot 3.3
 - Spring Data JPA + Hibernate
 - MariaDB
-- Spring Security Crypto (BCrypt)
+- Spring Security + JWT (HMAC-SHA256)
+- SpringDoc OpenAPI 3 (Swagger UI)
 
 ---
 
@@ -101,6 +102,75 @@ java -jar backend/target/sailconnect-backend-0.0.1-SNAPSHOT.jar
 - **Auth**: registrace, přihlášení, odhlášení
 - **Profil**: detail + editace (jméno, email, role)
 - **Číselník typů plavby**: načítán z databáze (`trip_type_def`)
+
+---
+
+## API dokumentace (Swagger)
+
+Po spuštění backendu je interaktivní dokumentace dostupná na:
+
+**[http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)**
+
+OpenAPI JSON schéma: `http://localhost:8080/v3/api-docs`
+
+Swagger UI umožňuje procházet všechny endpointy, testovat požadavky přímo v prohlížeči a zobrazuje validační pravidla pro každé pole.
+
+---
+
+## Bezpečnost a role
+
+Autentizace probíhá pomocí **JWT Bearer tokenu** (HMAC-SHA256, platnost 24 hodin).
+
+```
+POST /api/auth/login → { "token": "eyJ..." }
+Každý chráněný request: Authorization: Bearer <token>
+```
+
+| Role | Oprávnění |
+|------|-----------|
+| `CREW` | Prohlížení plaveb, vytváření a správa vlastních rezervací |
+| `CAPTAIN` | Vše + vytváření, úprava a mazání vlastních plaveb |
+
+Endpointy pro zápis (`POST`, `PUT`) vyžadují platný JWT token.
+Mazání plaveb (`DELETE /api/trips/{id}`) vyžaduje roli `CAPTAIN`.
+
+---
+
+## Architektura backendu
+
+```
+com.sailconnect
+├── config/          # Bezpečnost, JWT, CORS, OpenAPI konfigurace
+├── controller/      # REST endpointy – HTTP mapping, @Valid
+├── service/         # Business logika (AuthService, TripService, BookingService)
+├── repository/      # Spring Data JPA repozitáře
+│   └── TripRepository  ← vlastní @Query: full-text hledání + Pageable stránkování
+├── model/           # JPA entity (User, Trip, Booking, Country, TripTypeDef)
+├── dto/             # Data Transfer Objects – Java records s validací
+│   └── TripRequest  ← anotace @ValidDateRange (vlastní validátor)
+├── validation/      # Vlastní validační pravidla
+│   ├── ValidDateRange.java      (anotace @interface)
+│   └── DateRangeValidator.java  (implementace ConstraintValidator)
+├── exception/       # GlobalExceptionHandler → konzistentní ErrorResponse
+└── data/            # DataSeeder – inicializace dat při prvním spuštění
+```
+
+### Vlastní validátor (`@ValidDateRange`)
+Aplikován na `TripRequest` – ověřuje, že `endDate >= startDate`.
+Při chybě vrátí HTTP 400 s chybou na poli `endDate`:
+```json
+{ "status": 400, "message": "Chyba validace", "errors": { "endDate": "Datum ukončení musí být..." } }
+```
+
+---
+
+## Monitoring
+
+| Endpoint | Popis |
+|----------|-------|
+| `GET /actuator/health` | Stav aplikace a DB připojení |
+| `GET /actuator/info` | Informace o aplikaci |
+| `GET /actuator/metrics` | Metriky (počty požadavků, paměť…) |
 
 ---
 

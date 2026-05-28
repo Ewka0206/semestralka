@@ -80,13 +80,17 @@ export function DashboardPage() {
                             const trip = allTrips.find((t) => t.id === b.tripId);
                             return (
                                 <li key={b.id} className="listItem">
-                                    <img
-                                        src={trip?.imageUrl ?? "/images/trips/placeholder_800.webp"}
-                                        alt={trip?.title ?? "Plavba"}
-                                        className="bookingThumb"
-                                    />
+                                    <Link to={`/trips/${b.tripId}`} className="bookingThumbLink">
+                                        <img
+                                            src={trip?.imageUrl ?? "/images/trips/placeholder_800.webp"}
+                                            alt={trip?.title ?? "Plavba"}
+                                            className="bookingThumb"
+                                        />
+                                    </Link>
                                     <div className="listMain">
-                                        <strong>{trip?.title ?? b.tripId}</strong>
+                                        <Link to={`/trips/${b.tripId}`} className="listTitleLink">
+                                            <strong>{trip?.title ?? b.tripId}</strong>
+                                        </Link>
                                         <span className="muted">
                                             {b.seats} {b.seats === 1 ? "místo" : "místa"}
                                             {trip ? ` · ${trip.startDate} – ${trip.endDate}` : ""}

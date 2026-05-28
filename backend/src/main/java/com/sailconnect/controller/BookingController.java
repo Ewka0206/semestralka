@@ -3,6 +3,7 @@ package com.sailconnect.controller;
 import com.sailconnect.model.Booking;
 import com.sailconnect.service.BookingService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +18,14 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
+    /**
+     * Vrátí rezervace přihlášeného uživatele (userId z JWT tokenu).
+     * Kapitán (CAPTAIN) vidí všechny rezervace – userId bude null pouze
+     * u neautentizovaných volání, která Security blokuje před dosažením controlleru.
+     */
     @GetMapping
-    public List<Booking> getAll(@RequestHeader(value = "X-User-Id", required = false) String userId) {
+    public List<Booking> getAll(Authentication auth) {
+        String userId = (auth != null) ? auth.getName() : null;
         return bookingService.getAll(userId);
     }
 
@@ -31,10 +38,11 @@ public class BookingController {
     @ResponseStatus(HttpStatus.CREATED)
     public Booking create(
             @RequestBody Booking booking,
-            @RequestHeader(value = "X-User-Id", required = false) String userId
+            Authentication auth
     ) {
-        if (userId != null && booking.getUserId() == null) {
-            booking.setUserId(userId);
+        // Pokud userId není v těle requestu, doplníme z JWT tokenu
+        if (auth != null && booking.getUserId() == null) {
+            booking.setUserId(auth.getName());
         }
         return bookingService.create(booking);
     }

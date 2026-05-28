@@ -423,6 +423,23 @@ a.btn { text-decoration: none; }
     flex-shrink: 0;
     border: 1px solid var(--border);
 }
+.bookingThumbLink {
+    flex-shrink: 0;
+    display: block;
+    line-height: 0;
+}
+.bookingThumbLink:hover .bookingThumb {
+    border-color: var(--accent-400);
+    opacity: 0.85;
+}
+.listTitleLink {
+    color: inherit;
+    text-decoration: none;
+}
+.listTitleLink:hover strong {
+    color: var(--accent-300);
+    text-decoration: underline;
+}
 
 /* ── FORM HERO STRIP ─────────────────────────────────────────────────── */
 .formHeroStrip {

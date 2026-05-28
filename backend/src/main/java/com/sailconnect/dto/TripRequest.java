@@ -1,6 +1,7 @@
 package com.sailconnect.dto;
 
 import com.sailconnect.model.TripType;
+import com.sailconnect.validation.ValidDateRange;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,6 +21,7 @@ import java.util.List;
  *   <li>{@code capacity} – minimálně 1 místo</li>
  * </ul>
  */
+@ValidDateRange
 public record TripRequest(
 
         @NotBlank(message = "Název plavby je povinný")
