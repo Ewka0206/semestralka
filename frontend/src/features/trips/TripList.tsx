@@ -12,7 +12,6 @@ export function TripList({ trips }: Props) {
 
     return (
         <div className="stack">
-            <h1>Nabídka plaveb</h1>
             <div className="tripGrid">
                 {trips.map((trip,i) => (
                     <TripCard key={trip.id} trip={trip} priority={i === 0}/>

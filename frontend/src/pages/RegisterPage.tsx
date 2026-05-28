@@ -39,45 +39,56 @@ export function RegisterPage() {
     };
 
     return (
-        <div className="container stack">
-            <h1>Registrace</h1>
+        <div className="authPage">
+            <div className="authCard card stack">
+                <div className="authBrand">
+                    <span className="authIcon">⚓</span>
+                    <span className="authBrandName">SailConnect</span>
+                </div>
 
-            <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
-                <label className="field">
-                    <span>Jméno</span>
-                    <input {...register("name")} />
-                    <FormError error={errors.name} />
-                </label>
+                <div className="authHeading">
+                    <h1 className="authTitle">Registrace</h1>
+                    <p className="muted">Vytvoř si účet a vypluj na moře</p>
+                </div>
 
-                <label className="field">
-                    <span>Email</span>
-                    <input {...register("email")} />
-                    <FormError error={errors.email} />
-                </label>
+                <form className="stack" onSubmit={handleSubmit(onSubmit)}>
+                    <label className="field">
+                        <span>Jméno</span>
+                        <input {...register("name")} placeholder="Např. Eva Kratěnová" autoComplete="name" />
+                        <FormError error={errors.name} />
+                    </label>
 
-                <label className="field">
-                    <span>Role</span>
-                    <select {...register("role")}>
-                        <option value="crew">Člen posádky</option>
-                        <option value="captain">Kapitán</option>
-                    </select>
-                    <FormError error={errors.role as any} />
-                </label>
+                    <label className="field">
+                        <span>Email</span>
+                        <input {...register("email")} placeholder="kapitan@moře.cz" autoComplete="email" />
+                        <FormError error={errors.email} />
+                    </label>
 
-                <label className="field">
-                    <span>Heslo</span>
-                    <input type="password" {...register("password")} />
-                    <FormError error={errors.password} />
-                </label>
+                    <label className="field">
+                        <span>Role</span>
+                        <select {...register("role")}>
+                            <option value="crew">⛵ Člen posádky</option>
+                            <option value="captain">🧭 Kapitán</option>
+                        </select>
+                        <FormError error={errors.role as any} />
+                    </label>
 
-                <button className="btn" type="submit" disabled={isSubmitting}>
-                    Vytvořit účet
-                </button>
+                    <label className="field">
+                        <span>Heslo</span>
+                        <input type="password" {...register("password")} placeholder="••••••••" autoComplete="new-password" />
+                        <FormError error={errors.password} />
+                    </label>
 
-                <p className="muted">
-                    Už máš účet? Přihlas se zde: <Link to="/login">Přihlásit se</Link>
+                    <button className="btn" type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Vytvářím účet…" : "Vytvořit účet"}
+                    </button>
+                </form>
+
+                <p className="muted authSwitch">
+                    Už máš účet?{" "}
+                    <Link to="/login">Přihlásit se</Link>
                 </p>
-            </form>
+            </div>
         </div>
     );
 }

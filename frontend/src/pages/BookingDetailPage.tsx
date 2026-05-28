@@ -22,13 +22,8 @@ export function BookingDetailPage() {
         });
     }, [bookingId]);
 
-    if (booking === undefined) {
-        return <div className="container stack"><p className="muted">Načítám...</p></div>;
-    }
-
-    if (!booking) {
-        return <NotFoundPage />;
-    }
+    if (booking === undefined) return <div className="container stack"><p className="muted">Načítám...</p></div>;
+    if (!booking) return <NotFoundPage />;
 
     async function handleCancel() {
         if (!confirm("Opravdu chceš zrušit rezervaci?")) return;
@@ -38,40 +33,46 @@ export function BookingDetailPage() {
 
     return (
         <div className="container stack">
-            <h1>Detail rezervace</h1>
-
             <section className="card stack">
-                <div>
-                    Plavba:{" "}
-                    <strong>
-                        {trip ? <Link to={`/trips/${trip.id}`}>{trip.title}</Link> : booking.tripId}
-                    </strong>
+                <div className="formPageHeader">
+                    <p className="sectionTitle">Rezervace</p>
+                    <h1 className="formPageTitle">{trip?.title ?? "Detail rezervace"}</h1>
                 </div>
 
-                <div className="muted">
-                    Datum rezervace: {new Date(booking.createdAt).toLocaleString()}
-                </div>
-
-                <div>
-                    Počet míst: <strong>{booking.seats}</strong>
-                </div>
-
-                <div className="muted">
-                    Jméno: {booking.contactName} - email: {booking.contactEmail}
+                <div className="profileRows">
+                    <div className="profileRow">
+                        <span className="muted">Plavba</span>
+                        <strong>
+                            {trip
+                                ? <Link to={`/trips/${trip.id}`}>{trip.title}</Link>
+                                : booking.tripId}
+                        </strong>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Datum rezervace</span>
+                        <span>{new Date(booking.createdAt).toLocaleDateString("cs-CZ")}</span>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Počet míst</span>
+                        <strong>{booking.seats}</strong>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Jméno</span>
+                        <span>{booking.contactName}</span>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Email</span>
+                        <span>{booking.contactEmail}</span>
+                    </div>
                 </div>
 
                 <div className="actionsRow">
-                    <Link className="btn" to={`/bookings/${booking.id}/edit`}>
-                        Upravit rezervaci
-                    </Link>
-
-                    <button className="btn" type="button" onClick={handleCancel}>
-                        Zrušit rezervaci
-                    </button>
+                    <Link className="btn" to={`/bookings/${booking.id}/edit`}>Upravit rezervaci</Link>
+                    <button className="btn btnDanger" type="button" onClick={handleCancel}>Zrušit rezervaci</button>
                 </div>
             </section>
 
-            <Link to="/dashboard">← Zpět na Můj přehled</Link>
+            <Link className="detailBack" to="/dashboard">← Zpět na Můj přehled</Link>
         </div>
     );
 }

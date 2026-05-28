@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { TripFilters } from "../features/trips/TripFilters";
 import { TripList } from "../features/trips/TripList";
@@ -32,30 +33,31 @@ export function HomePage() {
 
     return (
         <div className="container stack">
-            <section className="article">
-                <article>
-                    <h1>Najdi posádku, plavbu nebo kapitána!</h1>
-                    <p>Hledáte posádku nebo plavbu snů?
-                        Sail Connect propojuje kapitány s dobrodruhy, kteří chtějí objevovat svět po vlnách.
-                        Ať už jste zkušený mořský vlk, začínající námořník nebo jen toužíte zažít vítr ve vlasech, u nás
-                        najdete perfektní posádku i plavbu.</p>
-
-                    <p>🌊 Najděte svou vysněnou plavbu</p>
-                    <p>⚓ Přidejte se k posádce a poznejte nové přátele</p>
-                    <p>🌍 Prozkoumejte svět z paluby jachty</p>
-
-                    <p> Přidejte se ke komunitě milovníků moře a nechte se unášet vlnami nových zážitků! Vyplujte s námi
-                        ještě dnes!</p>
-                </article>
+            <section className="hero">
+                <div className="heroContent">
+                    <span className="heroEyebrow">⚓ SailConnect</span>
+                    <h1 className="heroTitle">Najdi svou plavbu snů</h1>
+                    <p className="heroSub">
+                        Propojujeme kapitány s dobrodruhy, kteří chtějí objevovat svět po vlnách.
+                        Ať už jsi zkušený mořský vlk nebo začínající námořník – tady je tvá posádka.
+                    </p>
+                    <div className="heroActions">
+                        <a href="#nabidky" className="btn btnLg">Procházet plavby</a>
+                        <Link to="/offers/new" className="btn btnLg btnOutline">Přidat nabídku</Link>
+                    </div>
+                </div>
             </section>
-            <TripFilters
-                value={draft}
-                onChange={setDraft}
-                onSearch={handleSearch}
-                onReset={handleReset}
-            />
 
-            <TripList trips={filteredTrips}/>
+            <div className="stack" id="nabidky">
+                <h2 className="sectionTitle">Aktuální nabídky plaveb</h2>
+                <TripFilters
+                    value={draft}
+                    onChange={setDraft}
+                    onSearch={handleSearch}
+                    onReset={handleReset}
+                />
+                <TripList trips={filteredTrips} />
+            </div>
         </div>
     );
 }

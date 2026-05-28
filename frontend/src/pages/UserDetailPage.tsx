@@ -1,5 +1,5 @@
-import { Link} from "react-router-dom";
-import { getCurrentUser} from "../features/auth/repo";
+import { Link } from "react-router-dom";
+import { getCurrentUser } from "../features/auth/repo";
 import { userRoleLabels } from "../features/auth/i18n";
 
 export function UserDetailPage() {
@@ -7,56 +7,57 @@ export function UserDetailPage() {
 
     if (!user) {
         return (
-            <div className="container stack">
-                <h1>Můj profil</h1>
-                <p className="muted">Nejsi přihlášená.</p>
-                <Link className="btn" to="/login">
-                    Přihlásit se
-                </Link>
+            <div className="authPage">
+                <div className="authCard card stack">
+                    <div className="authBrand"><span className="authIcon">⚓</span><span className="authBrandName">SailConnect</span></div>
+                    <p className="muted" style={{ textAlign: "center" }}>Nejsi přihlášen/a.</p>
+                    <Link className="btn" to="/login">Přihlásit se</Link>
+                </div>
             </div>
         );
     }
 
-    const lastChange = user.updatedAt || user.createdAt;
+    const roleLabel = userRoleLabels[user.role];
+    const initials = user.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
-   return (
+    return (
         <div className="container stack">
-            <h1>Můj profil</h1>
+            <div className="card profileHeader">
+                <div className="profileAvatar">{initials}</div>
+                <div className="profileInfo">
+                    <p className="sectionTitle">Můj profil</p>
+                    <h1 className="dashName">{user.name}</h1>
+                    <p className="muted dashRole">⚓ {roleLabel} · {user.email}</p>
+                </div>
+                <div className="profileActions">
+                    <Link className="btn" to="/me/edit">Upravit profil</Link>
+                </div>
+            </div>
 
             <section className="card stack">
-                <div>
-                    <span className="muted">Jméno</span>
-                    <div><strong>{user.name}</strong></div>
-                </div>
-
-                {"email" in user && user.email ? (
-                    <div>
-                        <span className="muted">Email</span>
-                        <div>{(user as any).email}</div>
+                <h2 className="dashSectionTitle">Údaje účtu</h2>
+                <div className="profileRows">
+                    <div className="profileRow">
+                        <span className="muted">Jméno</span>
+                        <strong>{user.name}</strong>
                     </div>
-                ) : null}
-
-                <div>
-                    <span className="muted">Role</span>
-                    <div>{userRoleLabels[user.role]}</div>
+                    <div className="profileRow">
+                        <span className="muted">Email</span>
+                        <span>{user.email}</span>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Role</span>
+                        <span>{roleLabel}</span>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Registrace</span>
+                        <span>{new Date(user.createdAt).toLocaleDateString("cs-CZ")}</span>
+                    </div>
+                    <div className="profileRow">
+                        <span className="muted">Poslední změna</span>
+                        <span>{new Date(user.updatedAt || user.createdAt).toLocaleDateString("cs-CZ")}</span>
+                    </div>
                 </div>
-
-                <div>
-                    <span className="muted">Datum registrace</span>
-                    <div>{new Date(user.createdAt).toLocaleString()}</div>
-                </div>
-
-                <div>
-                    <span className="muted">Poslední změna</span>
-                    <div>{new Date(lastChange).toLocaleString()}</div>
-                </div>
-
-                <div className="actionsRow">
-                    <Link className="btn" to="/me/edit">
-                        Upravit profil
-                    </Link>
-                </div>
-
             </section>
         </div>
     );

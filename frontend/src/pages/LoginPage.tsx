@@ -30,30 +30,41 @@ export function LoginPage() {
     };
 
     return (
-        <div className="container stack">
-            <h1>Přihlášení</h1>
+        <div className="authPage">
+            <div className="authCard card stack">
+                <div className="authBrand">
+                    <span className="authIcon">⚓</span>
+                    <span className="authBrandName">SailConnect</span>
+                </div>
 
-            <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
-                <label className="field">
-                    <span>Email</span>
-                    <input {...register("email")} />
-                    <FormError error={errors.email} />
-                </label>
+                <div className="authHeading">
+                    <h1 className="authTitle">Přihlášení</h1>
+                    <p className="muted">Pokračuj ve svých námořních dobrodružstvích</p>
+                </div>
 
-                <label className="field">
-                    <span>Heslo</span>
-                    <input type="password" {...register("password")} />
-                    <FormError error={errors.password} />
-                </label>
+                <form className="stack" onSubmit={handleSubmit(onSubmit)}>
+                    <label className="field">
+                        <span>Email</span>
+                        <input {...register("email")} placeholder="kapitan@moře.cz" autoComplete="email" />
+                        <FormError error={errors.email} />
+                    </label>
 
-                <button className="btn" type="submit" disabled={isSubmitting}>
-                    Přihlásit se
-                </button>
+                    <label className="field">
+                        <span>Heslo</span>
+                        <input type="password" {...register("password")} placeholder="••••••••" autoComplete="current-password" />
+                        <FormError error={errors.password} />
+                    </label>
 
-                <p className="muted">
-                    Ještě nemáš účet? Klikni zde: <Link to="/register">Registrace</Link>
+                    <button className="btn" type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Přihlašuji…" : "Přihlásit se"}
+                    </button>
+                </form>
+
+                <p className="muted authSwitch">
+                    Ještě nemáš účet?{" "}
+                    <Link to="/register">Zaregistruj se</Link>
                 </p>
-            </form>
+            </div>
         </div>
     );
 }

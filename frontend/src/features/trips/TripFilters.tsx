@@ -97,16 +97,9 @@ export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
                     />
                 </div>
 
-                <div className="field" style={{ alignSelf: "end" }}>
-                    <button className="btn" type="submit">
-                        Hledat
-                    </button>
-                </div>
-
-                <div className="field" style={{ alignSelf: "end" }}>
-                    <button className="btn" type="button" onClick={onReset}>
-                        Vymazat filtry
-                    </button>
+                <div className="filterBtns">
+                    <button className="btn" type="submit">Hledat</button>
+                    <button className="btn btnOutline" type="button" onClick={onReset}>Vymazat filtry</button>
                 </div>
             </form>
         </section>

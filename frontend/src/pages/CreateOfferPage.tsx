@@ -78,22 +78,29 @@ export function CreateOfferPage() {
 
     return (
         <div className="container stack">
-            <h1>Vytvořit nabídku</h1>
+
+            {/* ── Dekorativní hero pruh ── */}
+            <div className="formHeroStrip">
+                <div>
+                    <p className="sectionTitle">Nová nabídka</p>
+                    <h1>Vytvořit plavbu</h1>
+                </div>
+            </div>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
+
                 <label className="field">
-                    <span>Název</span>
-                    <input {...register("title")} />
+                    <span>Název plavby</span>
+                    <input {...register("title")} placeholder="Např. Korfu – rekreace na Jónském moři" />
                     <FormError error={errors.title} />
                 </label>
 
                 <div className="grid2">
                     <label className="field">
                         <span>Destinace</span>
-                        <input {...register("location")} />
+                        <input {...register("location")} placeholder="Korfu" />
                         <FormError error={errors.location} />
                     </label>
-
                     <label className="field">
                         <span>Stát</span>
                         <input {...register("country")} placeholder="Řecko" />
@@ -101,12 +108,10 @@ export function CreateOfferPage() {
                 </div>
 
                 <label className="field">
-                    <span>Typ</span>
+                    <span>Typ plavby</span>
                     <select {...register("type")}>
                         {tripTypes.map((t) => (
-                            <option key={t.code} value={t.code}>
-                                {t.label}
-                            </option>
+                            <option key={t.code} value={t.code}>{t.label}</option>
                         ))}
                     </select>
                     <FormError error={errors.type as any} />
@@ -118,7 +123,6 @@ export function CreateOfferPage() {
                         <input type="date" {...register("startDate")} />
                         <FormError error={errors.startDate} />
                     </label>
-
                     <label className="field">
                         <span>Datum do</span>
                         <input type="date" {...register("endDate")} />
@@ -128,26 +132,25 @@ export function CreateOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Cena (CZK)</span>
+                        <span>Cena (Kč / osoba)</span>
                         <input type="number" min={0} {...register("priceCzk")} />
                         <FormError error={errors.priceCzk} />
                     </label>
-
                     <label className="field">
-                        <span>Počet míst</span>
+                        <span>Kapacita (počet míst)</span>
                         <input type="number" min={1} {...register("capacity")} />
                         <FormError error={errors.capacity} />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Detail</span>
-                    <textarea rows={4} {...register("description")} />
+                    <span>Popis plavby</span>
+                    <textarea rows={4} {...register("description")} placeholder="Stručný popis itineráře, co čeká účastníky…" />
                 </label>
 
                 <label className="field">
-                    <span>Souhrn (1 bod na řádek)</span>
-                    <textarea rows={4} {...register("highlightsText")} />
+                    <span>Highlights (1 bod na řádek)</span>
+                    <textarea rows={4} {...register("highlightsText")} placeholder={"Ostrov Korfu\nPlavba přes Jónské moře\nZápad slunce v přístavu"} />
                 </label>
 
                 <div className="field">
@@ -161,7 +164,7 @@ export function CreateOfferPage() {
                 {apiError && <p className="formError">{apiError}</p>}
 
                 <button className="btn" type="submit" disabled={isSubmitting}>
-                    Uložit
+                    {isSubmitting ? "Ukládám…" : "Uložit nabídku"}
                 </button>
             </form>
         </div>

@@ -5,6 +5,7 @@ import type { Trip } from "../features/trips/types";
 import { getBookings, deleteBooking } from "../features/bookings/repo";
 import { getAllTrips, getUserTrips, deleteUserTrip } from "../features/trips/repo";
 import { getCurrentUser } from "../features/auth/repo";
+import { formatDateRange } from "../features/trips/utils";
 
 export function DashboardPage() {
     const user = getCurrentUser();
@@ -32,41 +33,66 @@ export function DashboardPage() {
         setBookings((prev) => prev.filter((b) => b.id !== bookingId));
     }
 
+    const roleLabel = user?.role === "captain" ? "Kapitán" : "Člen posádky";
+
     return (
         <div className="container stack">
-            <h1>Můj přehled</h1>
 
-            {/* MOJE REZERVACE */}
+            {/* ── Uvítací banner ── */}
+            <div className="dashWelcome card">
+                <div className="dashWelcomeInner">
+                    <div>
+                        <p className="sectionTitle">Můj přehled</p>
+                        <h1 className="dashName">Ahoj, {user?.name ?? "námořníku"}!</h1>
+                        <p className="muted dashRole">⚓ {roleLabel} · {user?.email}</p>
+                    </div>
+                    <div className="dashStats">
+                        <div className="dashStat">
+                            <span className="dashStatNum">{myOffers.length}</span>
+                            <span className="dashStatLabel">Moje plavby</span>
+                        </div>
+                        <div className="dashStat">
+                            <span className="dashStatNum">{bookings.length}</span>
+                            <span className="dashStatLabel">Rezervace</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Moje rezervace ── */}
             <section className="card stack">
-                <h2>Moje rezervace</h2>
+                <div className="dashSectionHead">
+                    <h2 className="dashSectionTitle">🗓 Moje rezervace</h2>
+                </div>
 
                 {bookings.length === 0 ? (
-                    <p className="muted">
-                        Zatím nemáš žádné rezervace. Vyber si něco na <Link to="/">Přehled nabídek</Link>.
-                    </p>
+                    <div className="dashEmpty">
+                        <span className="dashEmptyIcon">🌊</span>
+                        <p>Zatím žádné rezervace.</p>
+                        <Link to="/" className="btn">Procházet plavby</Link>
+                    </div>
                 ) : (
                     <ul className="list">
                         {bookings.map((b) => {
                             const trip = allTrips.find((t) => t.id === b.tripId);
                             return (
                                 <li key={b.id} className="listItem">
+                                    <img
+                                        src={trip?.imageUrl ?? "/images/trips/placeholder_800.webp"}
+                                        alt={trip?.title ?? "Plavba"}
+                                        className="bookingThumb"
+                                    />
                                     <div className="listMain">
-                                        <div>
-                                            <strong>{trip?.title ?? b.tripId}</strong>
-                                        </div>
-                                        <div className="muted">
-                                            {b.seats} míst · {new Date(b.createdAt).toLocaleString()}
-                                        </div>
-                                        <div className="muted">
-                                            {b.contactName} · {b.contactEmail}
-                                        </div>
+                                        <strong>{trip?.title ?? b.tripId}</strong>
+                                        <span className="muted">
+                                            {b.seats} {b.seats === 1 ? "místo" : "místa"}
+                                            {trip ? ` · ${trip.startDate} – ${trip.endDate}` : ""}
+                                        </span>
                                     </div>
-
                                     <div className="actionsRow">
-                                        <Link className="btn" to={`/trips/${b.tripId}`}>Detail plavby</Link>
-                                        <Link className="btn" to={`/bookings/${b.id}`}>Detail rezervace</Link>
+                                        <Link className="btn" to={`/trips/${b.tripId}`}>Detail</Link>
                                         <Link className="btn" to={`/bookings/${b.id}/edit`}>Upravit</Link>
-                                        <button className="btn" type="button" onClick={() => handleCancelBooking(b.id)}>
+                                        <button className="btn btnDanger" type="button" onClick={() => handleCancelBooking(b.id)}>
                                             Zrušit
                                         </button>
                                     </div>
@@ -77,39 +103,35 @@ export function DashboardPage() {
                 )}
             </section>
 
-            {/* MOJE NABÍDKY */}
+            {/* ── Moje plavby ── */}
             <section className="card stack">
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <h2>Moje plavby</h2>
-                    <Link className="btn" to="/offers/new">
-                        + Nová plavba
-                    </Link>
+                <div className="dashSectionHead">
+                    <h2 className="dashSectionTitle">⛵ Moje plavby</h2>
+                    <Link className="btn" to="/offers/new">+ Nová plavba</Link>
                 </div>
 
                 {myOffers.length === 0 ? (
-                    <p className="muted">
-                        Zatím nemáš žádnou plavbu. Vytvoř si ji přes <Link to="/offers/new">Nová plavba</Link>.
-                    </p>
+                    <div className="dashEmpty">
+                        <span className="dashEmptyIcon">🧭</span>
+                        <p>Zatím žádná nabídka plavby.</p>
+                        <Link to="/offers/new" className="btn">Vytvořit první plavbu</Link>
+                    </div>
                 ) : (
                     <ul className="list">
                         {myOffers.map((t) => (
                             <li key={t.id} className="listItem">
                                 <div className="listMain">
-                                    <div>
-                                        <strong>{t.title}</strong>
-                                    </div>
-                                    <div className="muted">
-                                        {t.location}
-                                        {t.country ? ` · ${t.country}` : ""} · {t.startDate} – {t.endDate} ·{" "}
-                                        {t.priceCzk.toLocaleString("cs-CZ")} Kč
-                                    </div>
+                                    <strong>{t.title}</strong>
+                                    <span className="muted">
+                                        {t.location}{t.country ? ` · ${t.country}` : ""} · {formatDateRange(t.startDate, t.endDate)}
+                                    </span>
+                                    <span className="muted">{t.priceCzk.toLocaleString("cs-CZ")} Kč / os.</span>
                                 </div>
-
                                 <div className="actionsRow">
-                                    <Link className="btn" to={`/trips/${t.id}`}>Detail plavby</Link>
+                                    <Link className="btn" to={`/trips/${t.id}`}>Detail</Link>
                                     <Link className="btn" to={`/offers/${t.id}/edit`}>Upravit</Link>
-                                    <button className="btn" type="button" onClick={() => handleDeleteOffer(t.id)}>
-                                        Zrušit
+                                    <button className="btn btnDanger" type="button" onClick={() => handleDeleteOffer(t.id)}>
+                                        Smazat
                                     </button>
                                 </div>
                             </li>

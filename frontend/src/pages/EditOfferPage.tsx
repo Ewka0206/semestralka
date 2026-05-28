@@ -21,16 +21,9 @@ export function EditOfferPage() {
     const form = useForm<CreateOfferForm>({
         resolver: zodResolver(createOfferSchema) as any,
         defaultValues: {
-            title: "",
-            location: "",
-            country: "",
-            type: "Training",
-            startDate: "",
-            endDate: "",
-            priceCzk: 17000,
-            capacity: 8,
-            highlightsText: "",
-            description: "",
+            title: "", location: "", country: "", type: "Training",
+            startDate: "", endDate: "", priceCzk: 17000, capacity: 8,
+            highlightsText: "", description: "",
         },
         mode: "onBlur",
     });
@@ -51,26 +44,22 @@ export function EditOfferPage() {
                     capacity: t.capacity,
                     highlightsText: (t.highlights ?? []).join("\n"),
                     description: t.description ?? "",
+                    imageUrl: t.imageUrl ?? "",
                 });
             }
         });
     }, [tripId]);
 
-    if (trip === undefined) {
-        return <div className="container stack"><p className="muted">Načítám...</p></div>;
-    }
+    if (trip === undefined) return <div className="container stack"><p className="muted">Načítám...</p></div>;
+    if (!trip) return <NotFoundPage />;
 
-    if (!trip) {
-        return <NotFoundPage />;
-    }
+    const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = form;
 
     const onSubmit = async (values: CreateOfferForm) => {
         setApiError(null);
         try {
             const parsedHighlights = values.highlightsText
-                .split("\n")
-                .map((s) => s.trim())
-                .filter(Boolean);
+                .split("\n").map((s) => s.trim()).filter(Boolean);
 
             const updated: Trip = {
                 ...trip,
@@ -94,21 +83,21 @@ export function EditOfferPage() {
         }
     };
 
-    const {
-        register,
-        handleSubmit,
-        watch,
-        setValue,
-        formState: { errors, isSubmitting },
-    } = form;
-
     return (
         <div className="container stack">
-            <h1>Upravit nabídku</h1>
+
+            {/* ── Dekorativní hero pruh ── */}
+            <div className="formHeroStrip">
+                <div>
+                    <p className="sectionTitle">Upravit nabídku</p>
+                    <h1>{trip.title}</h1>
+                </div>
+            </div>
 
             <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
+
                 <label className="field">
-                    <span>Název</span>
+                    <span>Název plavby</span>
                     <input {...register("title")} />
                     <FormError error={errors.title} />
                 </label>
@@ -119,7 +108,6 @@ export function EditOfferPage() {
                         <input {...register("location")} />
                         <FormError error={errors.location} />
                     </label>
-
                     <label className="field">
                         <span>Stát</span>
                         <input {...register("country")} />
@@ -127,12 +115,10 @@ export function EditOfferPage() {
                 </div>
 
                 <label className="field">
-                    <span>Typ</span>
+                    <span>Typ plavby</span>
                     <select {...register("type")}>
                         {tripTypes.map((t) => (
-                            <option key={t.code} value={t.code}>
-                                {t.label}
-                            </option>
+                            <option key={t.code} value={t.code}>{t.label}</option>
                         ))}
                     </select>
                     <FormError error={errors.type as any} />
@@ -144,7 +130,6 @@ export function EditOfferPage() {
                         <input type="date" {...register("startDate")} />
                         <FormError error={errors.startDate} />
                     </label>
-
                     <label className="field">
                         <span>Datum do</span>
                         <input type="date" {...register("endDate")} />
@@ -154,25 +139,24 @@ export function EditOfferPage() {
 
                 <div className="grid2">
                     <label className="field">
-                        <span>Cena (CZK)</span>
+                        <span>Cena (Kč / osoba)</span>
                         <input type="number" min={0} {...register("priceCzk")} />
                         <FormError error={errors.priceCzk} />
                     </label>
-
                     <label className="field">
-                        <span>Počet míst</span>
+                        <span>Kapacita (počet míst)</span>
                         <input type="number" min={1} {...register("capacity")} />
                         <FormError error={errors.capacity} />
                     </label>
                 </div>
 
                 <label className="field">
-                    <span>Detail</span>
+                    <span>Popis plavby</span>
                     <textarea rows={4} {...register("description")} />
                 </label>
 
                 <label className="field">
-                    <span>Souhrn</span>
+                    <span>Highlights (1 bod na řádek)</span>
                     <textarea rows={4} {...register("highlightsText")} />
                 </label>
 
@@ -186,11 +170,13 @@ export function EditOfferPage() {
 
                 {apiError && <p className="formError">{apiError}</p>}
 
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <div className="actionsRow">
                     <button className="btn" type="submit" disabled={isSubmitting}>
-                        Uložit
+                        {isSubmitting ? "Ukládám…" : "Uložit změny"}
                     </button>
-                    <Link to={`/trips/${trip.id}`}>Zrušit</Link>
+                    <Link className="btn btnOutline" to={`/trips/${trip.id}`}>
+                        Zrušit
+                    </Link>
                 </div>
             </form>
         </div>

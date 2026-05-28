@@ -12,6 +12,7 @@ export function TripCard({ trip }: Props) {
     const free = Math.max(0, trip.capacity - booked);
     const highlights = trip.highlights ?? [];
     const imgSrc = trip.imageUrl ?? "/images/trips/placeholder_800.webp";
+    const badgeClass = `tripBadge tripBadge--${(trip.type ?? "relax").toLowerCase()}`;
 
     return (
         <article className="tripCard">
@@ -22,41 +23,34 @@ export function TripCard({ trip }: Props) {
                     className="tripImage"
                     loading="lazy"
                 />
+                <span className={badgeClass}>{typeLabel}</span>
             </Link>
 
             <div className="tripContent">
                 <div className="tripTop">
-                    <div>
-                        <h2 className="tripTitle">{trip.title}</h2>
-                        <p className="muted">
-                            {trip.location}
-                            {trip.country ? ` · ${trip.country}` : ""}
-                            {" · "}
-                            {typeLabel}
-                        </p>
-                    </div>
+                    <h2 className="tripTitle">{trip.title}</h2>
+                    <p className="tripLocation">
+                        {trip.location}
+                        {trip.country ? ` · ${trip.country}` : ""}
+                    </p>
+                </div>
+
+                <div className="tripPrice">
+                    {trip.priceCzk.toLocaleString("cs-CZ")} Kč
                 </div>
 
                 <div className="tripMeta">
-                    <div className="pill">
-                        cena <b>{trip.priceCzk.toLocaleString("cs-CZ")} Kč</b>
+                    <div className="tripMetaRow">
+                        <span>Termín</span>
+                        <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
                     </div>
-
-                    <div>
-                        <span className="muted">Termín</span>
-                        <div>{formatDateRange(trip.startDate, trip.endDate)}</div>
+                    <div className="tripMetaRow">
+                        <span>Volná místa</span>
+                        <span>{free} / {trip.capacity}</span>
                     </div>
-
-                    <div>
-                        <span className="muted">Volná místa</span>
-                        <div>
-                            {free} / {trip.capacity}
-                        </div>
-                    </div>
-
-                    <div>
-                        <span className="muted">Kapitán v ceně</span>
-                        <div>{trip.skipperIncluded ? "Ano" : "Ne"}</div>
+                    <div className="tripMetaRow">
+                        <span>Kapitán v ceně</span>
+                        <span>{trip.skipperIncluded ? "✓ Ano" : "Ne"}</span>
                     </div>
                 </div>
 
@@ -70,7 +64,7 @@ export function TripCard({ trip }: Props) {
 
                 <div className="tripActions">
                     <Link className="btn" to={`/trips/${trip.id}`}>
-                        Detail
+                        Detail plavby
                     </Link>
                 </div>
             </div>

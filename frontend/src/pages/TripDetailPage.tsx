@@ -10,6 +10,7 @@ import { getCurrentUser } from "../features/auth/repo";
 import type { Trip } from "../features/trips/types";
 import type { SubmitHandler } from "react-hook-form";
 import { useTripTypes } from "../features/trips/useTripTypes";
+import { formatDateRange } from "../features/trips/utils";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function TripDetailPage() {
@@ -37,42 +38,40 @@ export function TripDetailPage() {
         formState: { errors, isSubmitting },
     } = useForm<BookingForm>({
         resolver: zodResolver(bookingSchema) as any,
-        defaultValues: { seats: 1, contactName: "", contactEmail: "" },
+        defaultValues: { seats: 1 },
         mode: "onBlur",
     });
 
     if (trip === undefined) {
         return <div className="container stack"><p className="muted">Načítám...</p></div>;
     }
-
-    if (!trip) {
-        return <NotFoundPage />;
-    }
+    if (!trip) return <NotFoundPage />;
 
     const imgSrc = trip.imageUrl ?? "/images/trips/placeholder_800.webp";
+    const free = Math.max(0, trip.capacity - (trip.booked ?? 0));
+    const badgeClass = `tripBadge tripBadge--${(trip.type ?? "relax").toLowerCase()}`;
 
-    async function handleDelete(tripIdToDelete: string) {
+    async function handleDelete(id: string) {
         if (!isOwnOffer) return;
         if (!confirm("Opravdu smazat tuto nabídku?")) return;
-        await deleteUserTrip(tripIdToDelete);
+        await deleteUserTrip(id);
         nav("/");
     }
 
     const onBook: SubmitHandler<BookingForm> = async (values) => {
         setApiError(null);
-        const freeSeats = Math.max(0, trip!.capacity - (trip!.booked ?? 0));
-        if (values.seats > freeSeats) {
+        if (values.seats > free) {
             setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
         }
-
         try {
             await addBooking({
-                tripId: trip!.id,
+                tripId: trip.id,
                 createdAt: new Date().toISOString(),
                 seats: values.seats,
-                contactName: values.contactName.trim(),
-                contactEmail: values.contactEmail.trim(),
+                contactName: user?.name ?? "",
+                contactEmail: user?.email ?? "",
+                userId: user?.id,
             });
             setDone(true);
         } catch {
@@ -82,90 +81,103 @@ export function TripDetailPage() {
 
     return (
         <div className="container stack">
-            <header className="stack">
-                <h1>{trip.title}</h1>
-                <p className="muted">
-                    {trip.location}
-                    {trip.country ? ` · ${trip.country}` : ""} · {trip.startDate} – {trip.endDate} · {typeLabel}
-                </p>
-            </header>
 
+            {/* ── Hero fotka s badge ── */}
             <div className="tripHeroWrap">
-                <img src={imgSrc}
-                     alt={trip.title}
-                     className="tripHero"
-                     fetchPriority="high"
-                     decoding="async"/>
+                <img src={imgSrc} alt={trip.title} className="tripHero" fetchPriority="high" decoding="async" />
+                <span className={badgeClass}>{typeLabel}</span>
             </div>
 
-            <section className="card stack">
-                <p className="muted">{trip.description}</p>
-
-                {trip.highlights?.length ? (
-                    <ul className="tripHighlights">
-                        {trip.highlights.slice(0, 6).map((h) => (
-                            <li key={h}>{h}</li>
-                        ))}
-                    </ul>
-                ) : null}
-
-                <p>
-                    Počet volných míst{" "}<strong>{Math.max(0, trip.capacity - (trip.booked ?? 0))}</strong> z {trip.capacity} · Cena <strong>{trip.priceCzk.toLocaleString()} Kč</strong> / osoba
-                </p>
-
-                {isOwnOffer && (
-                    <div className="actionsRow">
-                        <Link className="btn" to={`/offers/${trip.id}/edit`}>
-                            Upravit plavbu
-                        </Link>
-
-                        <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
-                            Smazat plavbu
-                        </button>
+            {/* ── Titulek + meta ── */}
+            <div className="card detailHeader">
+                <div className="detailTitleBlock">
+                    <h1 className="detailTitle">{trip.title}</h1>
+                    <p className="tripLocation">
+                        {trip.location}{trip.country ? ` · ${trip.country}` : ""}
+                    </p>
+                </div>
+                <div className="detailMeta">
+                    <div className="tripMetaRow">
+                        <span>Termín</span>
+                        <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
                     </div>
-                )}
-            </section>
+                    <div className="tripMetaRow">
+                        <span>Volná místa</span>
+                        <span>{free} / {trip.capacity}</span>
+                    </div>
+                    <div className="tripMetaRow">
+                        <span>Kapitán v ceně</span>
+                        <span>{trip.skipperIncluded ? "✓ Ano" : "Ne"}</span>
+                    </div>
+                    <div className="tripMetaRow">
+                        <span>Cena</span>
+                        <span className="detailPrice">{trip.priceCzk.toLocaleString("cs-CZ")} Kč&nbsp;/ os.</span>
+                    </div>
+                </div>
+            </div>
 
+            {/* ── Popis + highlights ── */}
+            {(trip.description || (trip.highlights?.length ?? 0) > 0) && (
+                <section className="card stack">
+                    <h2>O plavbě</h2>
+                    {trip.description && <p className="muted">{trip.description}</p>}
+                    {(trip.highlights?.length ?? 0) > 0 && (
+                        <ul className="tripHighlights">
+                            {trip.highlights!.slice(0, 6).map((h) => <li key={h}>{h}</li>)}
+                        </ul>
+                    )}
+                    {isOwnOffer && (
+                        <div className="actionsRow">
+                            <Link className="btn" to={`/offers/${trip.id}/edit`}>Upravit plavbu</Link>
+                            <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
+                                Smazat plavbu
+                            </button>
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* ── Rezervační formulář ── */}
             <section className="card stack">
                 <h2>Rezervace</h2>
-
                 {isOwnOffer ? (
                     <p className="muted">Tohle je tvoje vlastní nabídka – nemůžeš si ji rezervovat.</p>
                 ) : done ? (
                     <div className="stack">
-                        <p>Rezervace uložena.</p>
-                        <Link to="/dashboard">Jít na Můj přehled</Link>
+                        <p>✓ Rezervace uložena.</p>
+                        <Link to="/dashboard" className="btn">Jít na Můj přehled</Link>
+                    </div>
+                ) : !user ? (
+                    <div className="stack">
+                        <p className="muted">Pro rezervaci musíš být přihlášen.</p>
+                        <Link to="/login" className="btn">Přihlásit se</Link>
                     </div>
                 ) : (
                     <form className="stack" onSubmit={handleSubmit(onBook)}>
-                        <label className="field">
-                            <span>Jméno</span>
-                            <input {...register("contactName")} placeholder="Např. Efka" />
-                            <FormError error={errors.contactName} />
-                        </label>
-
-                        <label className="field">
-                            <span>Email</span>
-                            <input {...register("contactEmail")} placeholder="efka@email.cz" />
-                            <FormError error={errors.contactEmail} />
-                        </label>
-
+                        <div className="profileRows">
+                            <div className="profileRow">
+                                <span className="muted">Jméno</span>
+                                <span>{user.name}</span>
+                            </div>
+                            <div className="profileRow">
+                                <span className="muted">Email</span>
+                                <span>{user.email}</span>
+                            </div>
+                        </div>
                         <label className="field">
                             <span>Počet míst</span>
-                            <input type="number" min={1} max={Math.max(0, trip.capacity - (trip.booked ?? 0))} {...register("seats")} />
+                            <input type="number" min={1} max={free} {...register("seats")} />
                             <FormError error={errors.seats} />
                         </label>
-
                         {apiError && <p className="formError">{apiError}</p>}
-
-                        <button className="btn" type="submit" disabled={isSubmitting}>
-                            Rezervovat
+                        <button className="btn" type="submit" disabled={isSubmitting || free === 0}>
+                            {isSubmitting ? "Ukládám…" : free === 0 ? "Obsazeno" : "Rezervovat"}
                         </button>
                     </form>
                 )}
             </section>
 
-            <Link to="/">← Zpět na Domovskou stránku</Link>
+            <Link to="/" className="detailBack">← Zpět na přehled plaveb</Link>
         </div>
     );
 }
