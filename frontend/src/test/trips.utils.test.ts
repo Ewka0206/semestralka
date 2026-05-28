@@ -8,12 +8,12 @@ const trips: Trip[] = [
         title: "Korfu – rekreační plavba",
         location: "Korfu",
         country: "Řecko",
-        type: "Rekreace" as any,
+        type: "Relax",
         startDate: "2026-06-06",
         endDate: "2026-06-13",
         priceCzk: 17000,
         capacity: 8,
-        booked: 0,
+        booked: 5,
         skipperIncluded: true,
         highlights: ["4 kajuty"],
         description: "Pohodová plavba.",
@@ -23,15 +23,30 @@ const trips: Trip[] = [
         title: "Trénink manévrů",
         location: "Saronský záliv",
         country: "Řecko",
-        type: "Trénink" as any,
+        type: "Training",
         startDate: "2026-05-16",
         endDate: "2026-05-23",
         priceCzk: 16500,
         capacity: 10,
-        booked: 0,
+        booked: 9,
         skipperIncluded: true,
         highlights: ["Manévry"],
         description: "Intenzivní trénink.",
+    },
+    {
+        id: "3",
+        title: "Chorvatsko tour",
+        location: "Split",
+        country: "Chorvatsko",
+        type: "Relax",
+        startDate: "2026-07-01",
+        endDate: "2026-07-08",
+        priceCzk: 18000,
+        capacity: 6,
+        booked: 0,
+        skipperIncluded: true,
+        highlights: [],
+        description: "Plavba podél Dalmácie.",
     },
 ];
 
@@ -39,17 +54,11 @@ describe("applyTripFilters", () => {
     it("bez filtrů vrátí všechny trips", () => {
         const f = defaultTripFilters();
         const out = applyTripFilters(trips, f);
-        expect(out).toHaveLength(2);
-    });
-
-    it("filtruje podle textu (q) case-insensitive", () => {
-        const f = { ...defaultTripFilters(), q: "kOrFu" };
-        const out = applyTripFilters(trips, f);
-        expect(out.map((t) => t.id)).toEqual(["1"]);
+        expect(out).toHaveLength(3);
     });
 
     it("filtruje podle typu", () => {
-        const f = { ...defaultTripFilters(), type: "Trénink" as any };
+        const f = { ...defaultTripFilters(), type: "Training" as const };
         const out = applyTripFilters(trips, f);
         expect(out.map((t) => t.id)).toEqual(["2"]);
     });
@@ -66,30 +75,22 @@ describe("applyTripFilters", () => {
         expect(out.map((t) => t.id)).toEqual(["2"]);
     });
 
-    it("filtruje podle země (q prohledává i country)", () => {
-        const f = { ...defaultTripFilters(), q: "Řecko" };
+    it("filtruje podle státu (přesná shoda)", () => {
+        const f = { ...defaultTripFilters(), country: "Chorvatsko" };
         const out = applyTripFilters(trips, f);
-        expect(out).toHaveLength(2);
+        expect(out.map((t) => t.id)).toEqual(["3"]);
     });
 
-    it("filtruje podle části názvu země case-insensitive", () => {
-        const tripWithDifferentCountry: Trip = {
-            id: "3",
-            title: "Chorvatsko tour",
-            location: "Split",
-            country: "Chorvatsko",
-            type: "Rekreace" as any,
-            startDate: "2026-07-01",
-            endDate: "2026-07-08",
-            priceCzk: 18000,
-            capacity: 6,
-            booked: 0,
-            skipperIncluded: true,
-            highlights: [],
-            description: "Plavba podél Dalmácie.",
-        };
-        const f = { ...defaultTripFilters(), q: "chorvatsko" };
-        const out = applyTripFilters([...trips, tripWithDifferentCountry], f);
-        expect(out.map((t) => t.id)).toEqual(["3"]);
+    it("filtruje podle minFreeSpots", () => {
+        // trip 1: 8-5=3 volná, trip 2: 10-9=1 volné, trip 3: 6-0=6 volných
+        const f = { ...defaultTripFilters(), minFreeSpots: 3 };
+        const out = applyTripFilters(trips, f);
+        expect(out.map((t) => t.id)).toEqual(["1", "3"]);
+    });
+
+    it("prázdný filtr státu vrátí vše", () => {
+        const f = { ...defaultTripFilters(), country: "" };
+        const out = applyTripFilters(trips, f);
+        expect(out).toHaveLength(3);
     });
 });

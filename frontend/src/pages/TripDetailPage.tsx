@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getTripById, deleteUserTrip } from "../features/trips/repo";
-import { addBooking } from "../features/bookings/repo";
+import { addBooking, getBookings } from "../features/bookings/repo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { bookingSchema, type BookingForm } from "../features/bookings/schemas";
 import { FormError } from "../components/forms/FormError";
 import { getCurrentUser } from "../features/auth/repo";
 import type { Trip } from "../features/trips/types";
+import type { Booking } from "../features/bookings/types";
 import type { SubmitHandler } from "react-hook-form";
 import { useTripTypes } from "../features/trips/useTripTypes";
 import { formatDateRange } from "../features/trips/utils";
@@ -19,6 +20,7 @@ export function TripDetailPage() {
     const user = getCurrentUser();
 
     const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
+    const [existingBooking, setExistingBooking] = useState<Booking | null>(null);
     const [done, setDone] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const tripTypes = useTripTypes();
@@ -27,6 +29,12 @@ export function TripDetailPage() {
     useEffect(() => {
         if (!tripId) { setTrip(null); return; }
         getTripById(tripId).then(setTrip).catch(() => setTrip(null));
+        // Načti existující rezervaci přihlášeného uživatele pro tuto plavbu
+        if (user) {
+            getBookings()
+                .then((bs) => setExistingBooking(bs.find((b) => b.tripId === tripId) ?? null))
+                .catch(() => setExistingBooking(null));
+        }
     }, [tripId]);
 
     const isOwnOffer = Boolean(user && trip?.ownerUserId && trip.ownerUserId === user.id);
@@ -35,12 +43,18 @@ export function TripDetailPage() {
         register,
         handleSubmit,
         setError,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<BookingForm>({
         resolver: zodResolver(bookingSchema) as any,
         defaultValues: { seats: 1 },
         mode: "onBlur",
     });
+
+    // Jakmile se načte existující rezervace, předvyplň formulář
+    useEffect(() => {
+        if (existingBooking) reset({ seats: existingBooking.seats });
+    }, [existingBooking]);
 
     if (trip === undefined) {
         return <div className="container stack"><p className="muted">Načítám...</p></div>;
@@ -60,22 +74,30 @@ export function TripDetailPage() {
 
     const onBook: SubmitHandler<BookingForm> = async (values) => {
         setApiError(null);
-        if (values.seats > free) {
+        // Při upsert: volná místa = aktuálně free + seats které už uživatel drží
+        const heldSeats = existingBooking?.seats ?? 0;
+        if (values.seats > free + heldSeats) {
             setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
         }
         try {
-            await addBooking({
+            const saved = await addBooking({
                 tripId: trip.id,
-                createdAt: new Date().toISOString(),
+                createdAt: existingBooking?.createdAt ?? new Date().toISOString(),
                 seats: values.seats,
                 contactName: user?.name ?? "",
                 contactEmail: user?.email ?? "",
                 userId: user?.id,
             });
+            // Znovu načti plavbu ze serveru – backend aktualizoval trip.booked
+            const updated = await getTripById(trip.id);
+            setTrip(updated);
+            setExistingBooking(saved);
             setDone(true);
-        } catch {
-            setApiError("Rezervaci se nepodařilo uložit. Zkuste to znovu.");
+        } catch (err: any) {
+            let msg: string | null = null;
+            try { msg = JSON.parse(err?.message)?.message ?? null; } catch { /* není JSON */ }
+            setApiError(msg ?? err?.message ?? "Rezervaci se nepodařilo uložit. Zkuste to znovu.");
         }
     };
 
@@ -144,7 +166,7 @@ export function TripDetailPage() {
                     <p className="muted">Tohle je tvoje vlastní plavba – nemůžeš si ji rezervovat.</p>
                 ) : done ? (
                     <div className="stack">
-                        <p>✓ Rezervace uložena.</p>
+                        <p>✓ {existingBooking ? `Rezervace upravena – celkem ${existingBooking.seats} ${existingBooking.seats === 1 ? "místo" : "místa"}.` : "Rezervace uložena."}</p>
                         <Link to="/dashboard" className="btn">Jít na Můj přehled</Link>
                     </div>
                 ) : !user ? (
@@ -164,6 +186,29 @@ export function TripDetailPage() {
                     </div>
                 ) : (
                     <form className="stack" onSubmit={handleSubmit(onBook)}>
+                        {existingBooking && (
+                            <div className="bookingStatus">
+                                <div className="bookingStatusIcon">⚓</div>
+                                <div className="bookingStatusBody">
+                                    <p className="bookingStatusLabel">Tvoje rezervace</p>
+                                    <p className="bookingStatusSeats">
+                                        <span className="bookingStatusNum">{existingBooking.seats}</span>
+                                        <span className="bookingStatusUnit">
+                                            {existingBooking.seats === 1 ? "místo" : "místa"}
+                                        </span>
+                                    </p>
+                                    <p className="bookingStatusHint">Změň počet níže a potvrď pro úpravu</p>
+                                </div>
+                                <Link
+                                    to={`/bookings/${existingBooking.id}`}
+                                    className="btn btnOutline"
+                                    style={{ marginLeft: "auto", flexShrink: 0 }}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    Detail rezervace
+                                </Link>
+                            </div>
+                        )}
                         <div className="profileRows">
                             <div className="profileRow">
                                 <span className="muted">Jméno</span>
@@ -176,12 +221,17 @@ export function TripDetailPage() {
                         </div>
                         <label className="field">
                             <span>Počet míst</span>
-                            <input type="number" min={1} max={free} {...register("seats")} />
+                            <input
+                                type="number"
+                                min={1}
+                                max={free + (existingBooking?.seats ?? 0)}
+                                {...register("seats")}
+                            />
                             <FormError error={errors.seats} />
                         </label>
                         {apiError && <p className="formError">{apiError}</p>}
                         <button className="btn" type="submit" disabled={isSubmitting || free === 0}>
-                            {isSubmitting ? "Ukládám…" : free === 0 ? "Obsazeno" : "Rezervovat"}
+                            {isSubmitting ? "Ukládám…" : free === 0 && !existingBooking ? "Obsazeno" : existingBooking ? "Upravit rezervaci" : "Rezervovat"}
                         </button>
                     </form>
                 )}

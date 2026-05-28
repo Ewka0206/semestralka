@@ -63,11 +63,16 @@ export function EditUserPage() {
 
     return (
         <div className="container stack">
-            <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
-                <div className="formPageHeader">
+
+            {/* ── Dekorativní hero pruh ── */}
+            <div className="formHeroStrip formHeroStrip--nordic">
+                <div>
                     <p className="sectionTitle">Můj profil</p>
-                    <h1 className="formPageTitle">Upravit profil</h1>
+                    <h1>Upravit profil</h1>
                 </div>
+            </div>
+
+            <form className="card stack" onSubmit={handleSubmit(onSubmit)}>
 
                 <label className="field">
                     <span>Jméno</span>

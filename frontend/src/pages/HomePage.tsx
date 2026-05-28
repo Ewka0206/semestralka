@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { TripFilters } from "../features/trips/TripFilters";
 import { TripList } from "../features/trips/TripList";
-import { applyTripFilters, defaultTripFilters } from "../features/trips/utils";
-import { getAllTrips } from "../features/trips/repo";
+import { defaultTripFilters, type TripFiltersState } from "../features/trips/utils";
+import { searchTrips } from "../features/trips/repo";
 import { useAuth } from "../features/auth/AuthContext";
 import type { Trip } from "../features/trips/types";
 
@@ -12,26 +12,31 @@ export function HomePage() {
     usePageTitle("Sail Connect – Najdi plavbu nebo posádku");
     const { user } = useAuth();
     const isCaptain = user?.role === "captain";
-    const [draft, setDraft] = useState(defaultTripFilters());
-    const [applied, setApplied] = useState(defaultTripFilters());
-    const [allTrips, setAllTrips] = useState<Trip[]>([]);
+    const location = useLocation();
+    const [draft, setDraft] = useState<TripFiltersState>(defaultTripFilters());
+    const [trips, setTrips] = useState<Trip[]>([]);
+    const [activeFilters, setActiveFilters] = useState<TripFiltersState>(defaultTripFilters());
 
-    useEffect(() => {
-        getAllTrips().then(setAllTrips).catch(console.error);
+    // Načti plavby ze serveru s aktuálními filtry – volá se při každé navigaci
+    // na homepage i po kliknutí na Hledat (data vždy čerstvá z DB)
+    const fetchTrips = useCallback((filters: TripFiltersState) => {
+        searchTrips(filters).then(setTrips).catch(console.error);
     }, []);
 
-    const filteredTrips = useMemo(() => {
-        return applyTripFilters(allTrips, applied);
-    }, [allTrips, applied]);
+    useEffect(() => {
+        fetchTrips(activeFilters);
+    }, [location.key]);  // refresh při každém příchodu na stránku
 
     function handleSearch() {
-        setApplied(draft);
+        setActiveFilters(draft);
+        fetchTrips(draft);
     }
 
     function handleReset() {
         const def = defaultTripFilters();
         setDraft(def);
-        setApplied(def);
+        setActiveFilters(def);
+        fetchTrips(def);
     }
 
     return (
@@ -64,7 +69,7 @@ export function HomePage() {
                     onSearch={handleSearch}
                     onReset={handleReset}
                 />
-                <TripList trips={filteredTrips} />
+                <TripList trips={trips} />
             </div>
         </div>
     );

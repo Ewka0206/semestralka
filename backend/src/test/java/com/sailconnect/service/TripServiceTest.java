@@ -96,30 +96,43 @@ class TripServiceTest {
     }
 
     @Test
-    void search_sKeywordem_vratiStrankovanyVysledek() {
+    void search_sKeywordemATypem_vratiStrankovanyVysledek() {
         Pageable pageable = PageRequest.of(0, 5);
         Page<Trip> page = new PageImpl<>(List.of(trip), pageable, 1);
-        when(tripRepo.searchAvailable(eq("korfu"), eq("RELAX"), eq(pageable))).thenReturn(page);
+        when(tripRepo.searchAvailable(eq("korfu"), eq("RELAX"), eq(""), eq(""), eq(""),
+                eq(-1), eq(1), eq(pageable))).thenReturn(page);
 
-        Page<Trip> result = tripService.search("korfu", "Relax", pageable);
+        Page<Trip> result = tripService.search("korfu", "Relax", null, null, null, null, null, pageable);
 
         assertThat(result.getTotalElements()).isEqualTo(1);
-        assertThat(result.getTotalPages()).isEqualTo(1);
-        assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("Korfu – rekreace");
-        verify(tripRepo).searchAvailable("korfu", "RELAX", pageable);
+        verify(tripRepo).searchAvailable("korfu", "RELAX", "", "", "", -1, 1, pageable);
     }
 
     @Test
     void search_prazdnyKeyword_pouzijePrazdnyRetezec() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Trip> emptyPage = Page.empty(pageable);
-        when(tripRepo.searchAvailable(eq(""), eq(""), eq(pageable))).thenReturn(emptyPage);
+        when(tripRepo.searchAvailable(eq(""), eq(""), eq(""), eq(""), eq(""),
+                eq(-1), eq(1), eq(pageable))).thenReturn(emptyPage);
 
-        Page<Trip> result = tripService.search(null, null, pageable);
+        Page<Trip> result = tripService.search(null, null, null, null, null, null, null, pageable);
 
         assertThat(result.getTotalElements()).isEqualTo(0);
-        verify(tripRepo).searchAvailable("", "", pageable);
+        verify(tripRepo).searchAvailable("", "", "", "", "", -1, 1, pageable);
+    }
+
+    @Test
+    void search_sKrajinouACenou_filtrujeSprávně() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Trip> page = new PageImpl<>(List.of(trip), pageable, 1);
+        when(tripRepo.searchAvailable(eq(""), eq(""), eq("Řecko"), eq("2026-06-01"), eq("2026-08-31"),
+                eq(20000), eq(2), eq(pageable))).thenReturn(page);
+
+        Page<Trip> result = tripService.search(null, null, "Řecko", "2026-06-01", "2026-08-31", 20000, 2, pageable);
+
+        assertThat(result.getContent()).hasSize(1);
+        verify(tripRepo).searchAvailable("", "", "Řecko", "2026-06-01", "2026-08-31", 20000, 2, pageable);
     }
 
     @Test

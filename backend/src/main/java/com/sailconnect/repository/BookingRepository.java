@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, String> {
     List<Booking> findByUserId(String userId);
+
+    /** Vrátí rezervaci konkrétního uživatele pro danou plavbu, pokud existuje. */
+    java.util.Optional<Booking> findByUserIdAndTripId(String userId, String tripId);
 }

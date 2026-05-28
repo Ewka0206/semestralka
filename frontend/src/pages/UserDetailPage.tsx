@@ -18,22 +18,46 @@ export function UserDetailPage() {
     }
 
     const roleLabel = userRoleLabels[user.role];
-    const initials = user.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+    const roleIcon  = user.role === "captain" ? "⛵" : "🧑‍✈️";
+    const initials  = user.name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+    const memberSince = new Date(user.createdAt).toLocaleDateString("cs-CZ", { year: "numeric", month: "long" });
+    const daysSince = Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86_400_000);
 
     return (
         <div className="container stack">
+
+            {/* ── Hlavička profilu ── */}
             <div className="card profileHeader">
                 <div className="profileAvatar">{initials}</div>
                 <div className="profileInfo">
                     <p className="sectionTitle">Můj profil</p>
                     <h1 className="dashName">{user.name}</h1>
-                    <p className="muted dashRole">⚓ {roleLabel} · {user.email}</p>
                 </div>
                 <div className="profileActions">
                     <Link className="btn" to="/me/edit">Upravit profil</Link>
                 </div>
             </div>
 
+            {/* ── Stat karty ── */}
+            <div className="statGrid">
+                <div className="statCard">
+                    <span className="statCardIcon">{roleIcon}</span>
+                    <span className="statCardNum" style={{ fontSize: "1rem", paddingTop: 4 }}>{roleLabel}</span>
+                    <p className="statCardLabel">Role</p>
+                </div>
+                <div className="statCard">
+                    <span className="statCardIcon">📅</span>
+                    <span className="statCardNum" style={{ fontSize: "1rem", paddingTop: 4 }}>{memberSince}</span>
+                    <p className="statCardLabel">Člen od</p>
+                </div>
+                <div className="statCard">
+                    <span className="statCardIcon">⚓</span>
+                    <span className="statCardNum">{daysSince}</span>
+                    <p className="statCardLabel">Dní na palubě</p>
+                </div>
+            </div>
+
+            {/* ── Detailní údaje ── */}
             <section className="card stack">
                 <h2 className="dashSectionTitle">Údaje účtu</h2>
                 <div className="profileRows">

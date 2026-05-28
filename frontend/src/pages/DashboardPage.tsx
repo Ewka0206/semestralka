@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { Booking } from "../features/bookings/types";
 import type { Trip } from "../features/trips/types";
 import { getBookings, deleteBooking } from "../features/bookings/repo";
@@ -12,6 +12,7 @@ export function DashboardPage() {
     const user = getCurrentUser();
     const { user: authUser } = useAuth();
     const isCaptain = authUser?.role === "captain";
+    const nav = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [myOffers, setMyOffers] = useState<Trip[]>([]);
     const [allTrips, setAllTrips] = useState<Trip[]>([]);
@@ -49,17 +50,23 @@ export function DashboardPage() {
                         <h1 className="dashName">Ahoj, {user?.name ?? "námořníku"}!</h1>
                         <p className="muted dashRole">⚓ {roleLabel} · {user?.email}</p>
                     </div>
-                    <div className="dashStats">
-                        <div className="dashStat">
-                            <span className="dashStatNum">{myOffers.length}</span>
-                            <span className="dashStatLabel">Moje plavby</span>
-                        </div>
-                        <div className="dashStat">
-                            <span className="dashStatNum">{bookings.length}</span>
-                            <span className="dashStatLabel">Rezervace</span>
-                        </div>
-                    </div>
                 </div>
+            </div>
+
+            {/* ── Stat karty ── */}
+            <div className="statGrid">
+                <div className="statCard">
+                    <span className="statCardIcon">🗓️</span>
+                    <span className="statCardNum">{bookings.length}</span>
+                    <p className="statCardLabel">Moje rezervace</p>
+                </div>
+                {isCaptain && (
+                    <div className="statCard">
+                        <span className="statCardIcon">⛵</span>
+                        <span className="statCardNum">{myOffers.length}</span>
+                        <p className="statCardLabel">Moje plavby</p>
+                    </div>
+                )}
             </div>
 
             {/* ── Moje rezervace ── */}
@@ -79,25 +86,25 @@ export function DashboardPage() {
                         {bookings.map((b) => {
                             const trip = allTrips.find((t) => t.id === b.tripId);
                             return (
-                                <li key={b.id} className="listItem">
-                                    <Link to={`/trips/${b.tripId}`} className="bookingThumbLink">
-                                        <img
-                                            src={trip?.imageUrl ?? "/images/trips/placeholder_800.webp"}
-                                            alt={trip?.title ?? "Plavba"}
-                                            className="bookingThumb"
-                                        />
-                                    </Link>
+                                <li
+                                    key={b.id}
+                                    className="listItem listItemClickable"
+                                    onClick={() => nav(`/trips/${b.tripId}`)}
+                                >
+                                    <img
+                                        src={trip?.imageUrl ?? "/images/trips/placeholder_800.webp"}
+                                        alt={trip?.title ?? "Plavba"}
+                                        className="bookingThumb"
+                                    />
                                     <div className="listMain">
-                                        <Link to={`/trips/${b.tripId}`} className="listTitleLink">
-                                            <strong>{trip?.title ?? b.tripId}</strong>
-                                        </Link>
+                                        <strong>{trip?.title ?? b.tripId}</strong>
                                         <span className="muted">
                                             {b.seats} {b.seats === 1 ? "místo" : "místa"}
-                                            {trip ? ` · ${trip.startDate} – ${trip.endDate}` : ""}
+                                            {trip ? ` · ${formatDateRange(trip.startDate, trip.endDate)}` : ""}
                                         </span>
                                     </div>
-                                    <div className="actionsRow">
-                                        <Link className="btn" to={`/trips/${b.tripId}`}>Detail</Link>
+                                    <div className="actionsRow" onClick={(e) => e.stopPropagation()}>
+                                        <Link className="btn" to={`/bookings/${b.id}`}>Detail rezervace</Link>
                                         <Link className="btn" to={`/bookings/${b.id}/edit`}>Upravit</Link>
                                         <button className="btn btnDanger" type="button" onClick={() => handleCancelBooking(b.id)}>
                                             Zrušit rezervaci

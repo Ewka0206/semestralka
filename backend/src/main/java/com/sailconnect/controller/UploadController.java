@@ -1,5 +1,9 @@
 package com.sailconnect.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +17,8 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/upload")
+@Tag(name = "Upload", description = "Nahrávání obrázků")
+@SecurityRequirement(name = "bearerAuth")
 public class UploadController {
 
     private static final Set<String> ALLOWED = Set.of("jpg", "jpeg", "png", "webp");
@@ -20,6 +26,13 @@ public class UploadController {
     @Value("${upload.dir}")
     private String uploadDir;
 
+    @Operation(
+        summary     = "Nahrání obrázku",
+        description = "Přijme soubor formátu jpg, png nebo webp (max 10 MB). "
+                    + "Vrátí URL uloženého souboru (relativní cesta přístupná z frontendu)."
+    )
+    @ApiResponse(responseCode = "200", description = "Soubor nahrán – vrátí { \"url\": \"/images/uploads/...\" }")
+    @ApiResponse(responseCode = "400", description = "Nepodporovaný formát souboru")
     @PostMapping
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
         String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "";

@@ -20,21 +20,28 @@ public interface TripRepository extends JpaRepository<Trip, String> {
     List<Trip> findByOwnerUserId(String ownerUserId);
 
     /**
-     * Složený vyhledávací dotaz se stránkováním – prohledává více polí a filtruje dostupné plavby.
+     * Složený vyhledávací dotaz se stránkováním – filtruje plavby přímo v databázi.
      *
      * <p>Nativní SQL dotaz kombinující:
      * <ul>
      *   <li>Full-text vyhledávání (LIKE) přes sloupce {@code title}, {@code location}, {@code country}.</li>
      *   <li>Filtrování dle typu plavby (prázdný řetězec = bez filtru).</li>
-     *   <li>Pouze plavby s alespoň jedním volným místem ({@code capacity > booked}).</li>
+     *   <li>Filtrování dle státu – přesná shoda (prázdný řetězec = bez filtru).</li>
+     *   <li>Filtrování dle rozsahu data zahájení {@code dateFrom}–{@code dateTo} (prázdný řetězec = bez filtru).</li>
+     *   <li>Filtrování dle maximální ceny v Kč (záporná hodnota = bez filtru).</li>
+     *   <li>Minimální počet volných míst {@code (capacity - booked) >= minFreeSpots}; výchozí 1.</li>
      *   <li>Výsledky seřazené vzestupně dle data zahájení.</li>
-     *   <li>Stránkování přes {@link Pageable} – {@code page} (od 0) a {@code size}.</li>
      * </ul>
      *
-     * @param keyword  hledaný výraz nebo prázdný řetězec (ignoruje filtr)
-     * @param type     typ plavby jako uppercase string ("RELAX", "TRAINING", "ADVENTURE")
-     *                 nebo prázdný řetězec (ignoruje filtr)
-     * @param pageable stránkovací parametry
+     * @param keyword      hledaný výraz nebo prázdný řetězec (ignoruje filtr)
+     * @param type         typ plavby jako uppercase string ("RELAX", "TRAINING", "ADVENTURE")
+     *                     nebo prázdný řetězec (ignoruje filtr)
+     * @param country      přesný název státu nebo prázdný řetězec (ignoruje filtr)
+     * @param dateFrom     nejdřívější datum zahájení (YYYY-MM-DD) nebo prázdný řetězec
+     * @param dateTo       nejpozdější datum zahájení (YYYY-MM-DD) nebo prázdný řetězec
+     * @param maxPrice     maximální cena v Kč; záporná hodnota = bez filtru
+     * @param minFreeSpots minimální počet volných míst; výchozí 1 (=alespoň jedno volné místo)
+     * @param pageable     stránkovací parametry
      * @return stránka dostupných plaveb splňujících kritéria
      */
     @Query(
@@ -44,8 +51,12 @@ public interface TripRepository extends JpaRepository<Trip, String> {
                    OR LOWER(title)    LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(location) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(country)  LIKE LOWER(CONCAT('%', :keyword, '%')))
-              AND (:type = '' OR type = :type)
-              AND capacity > booked
+              AND (:type    = '' OR type    = :type)
+              AND (:country = '' OR country = :country)
+              AND (:dateFrom = '' OR start_date >= :dateFrom)
+              AND (:dateTo   = '' OR start_date <= :dateTo)
+              AND (:maxPrice < 0  OR price_czk  <= :maxPrice)
+              AND (capacity - booked) >= :minFreeSpots
             ORDER BY start_date ASC
             """,
         countQuery = """
@@ -54,11 +65,20 @@ public interface TripRepository extends JpaRepository<Trip, String> {
                    OR LOWER(title)    LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(location) LIKE LOWER(CONCAT('%', :keyword, '%'))
                    OR LOWER(country)  LIKE LOWER(CONCAT('%', :keyword, '%')))
-              AND (:type = '' OR type = :type)
-              AND capacity > booked
+              AND (:type    = '' OR type    = :type)
+              AND (:country = '' OR country = :country)
+              AND (:dateFrom = '' OR start_date >= :dateFrom)
+              AND (:dateTo   = '' OR start_date <= :dateTo)
+              AND (:maxPrice < 0  OR price_czk  <= :maxPrice)
+              AND (capacity - booked) >= :minFreeSpots
             """,
         nativeQuery = true)
-    Page<Trip> searchAvailable(@Param("keyword") String keyword,
-                               @Param("type")    String type,
+    Page<Trip> searchAvailable(@Param("keyword")      String keyword,
+                               @Param("type")         String type,
+                               @Param("country")      String country,
+                               @Param("dateFrom")     String dateFrom,
+                               @Param("dateTo")       String dateTo,
+                               @Param("maxPrice")     int maxPrice,
+                               @Param("minFreeSpots") int minFreeSpots,
                                Pageable pageable);
 }

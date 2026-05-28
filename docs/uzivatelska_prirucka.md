@@ -46,7 +46,7 @@
 |-------|------------|-------|
 | **Domů** | Vždy | Přehled všech nabídek plaveb s filtrem |
 | **Můj přehled** | Po přihlášení | Vaše rezervace a vaše nabídky plaveb |
-| **Vytvořit nabídku** | Po přihlášení | Formulář pro novou nabídku plavby |
+| **Vytvořit nabídku** | Pouze Kapitán | Formulář pro novou nabídku plavby |
 | **Jméno (role)** | Po přihlášení | Váš profil |
 | **Přihlášení / Registrace** | Nepřihlášený | Přístup k účtu |
 | **Odhlášení** | Po přihlášení | Odhlásí vás z aplikace |
@@ -91,15 +91,16 @@ Domovská stránka (dostupná i bez přihlášení) zobrazuje všechny dostupné
 
 ### 4.1 Filtr nabídek
 
-V horní části stránky je k dispozici filtrační panel:
+V horní části stránky je k dispozici filtrační panel se třemi řádky:
 
 | Pole | Popis | Příklad |
 |------|-------|---------|
-| **Destinace** | Hledá v názvu, místě a státu plavby | `Korfu`, `Řecko`, `Stockholm` |
 | **Typ plavby** | Filtruje dle kategorie (Cokoliv / Trénink dovedností / Dobrodružství / Rekreační plavba) | Dobrodružství |
-| **Datum od** | Plavby začínající nejdříve v tento den | 2026-06-01 |
-| **Datum do** | Plavby začínající nejpozději v tento den | 2026-08-31 |
-| **Maximální cena (CZK)** | Plavby s cenou do zadané hodnoty | 20000 |
+| **Stát** | Výběr ze seznamu zemí světa (přesná shoda) | Chorvatsko, Řecko |
+| **Termín od** | Plavby začínající nejdříve v tento den | 2026-06-01 |
+| **Termín do** | Plavby začínající nejpozději v tento den | 2026-08-31 |
+| **Maximální cena (CZK)** | Plavby s cenou do zadané hodnoty | 20 000 |
+| **Min. volných míst** | Zobrazí jen plavby s alespoň tolika volnými místy | 2 |
 
 - Klikněte na **Hledat** pro aplikování filtru.
 - Klikněte na **Vymazat filtry** pro zobrazení všech nabídek.
@@ -132,17 +133,18 @@ Kliknutím na **Detail** na kartě plavby (nebo přes přímý odkaz `/trips/{id
 
 ### 5.2 Vytvoření rezervace
 
-> Rezervaci může vytvořit **přihlášený i nepřihlášený** uživatel. Vlastní nabídku si nelze rezervovat.
+> Rezervaci může vytvořit pouze **přihlášený** uživatel. Vlastní nabídku si nelze rezervovat.
 
 1. Přejděte na detail plavby.
-2. V sekci **Rezervace** vyplňte:
-   - **Jméno** – kontaktní jméno
-   - **Email** – kontaktní e-mail
-   - **Počet míst** – kolik míst chcete rezervovat (max. počet volných míst)
+2. V sekci **Rezervace** uvidíte předvyplněné kontaktní údaje (jméno a e-mail jsou načteny z vašeho profilu). Vyplňte:
+   - **Počet míst** – kolik míst chcete rezervovat (min. 1, max. aktuálně volný počet míst)
 3. Klikněte na **Rezervovat**.
 4. Po úspěšné rezervaci se zobrazí potvrzení s odkazem na **Můj přehled**.
 
-> ⚠️ Pokud plavba nemá dostatek volných míst, zobrazí se chybová zpráva.
+> ℹ️ Pokud na dané plavbě již rezervaci máte, formulář ji zobrazí a tlačítko se změní na **Upravit rezervaci** – provedete tak upsert (aktualizaci stávající rezervace, ne vytvoření nové).
+
+> ⚠️ Pokud plavba nemá dostatek volných míst, zobrazí se chybová zpráva.  
+> ℹ️ Pro rezervaci musíte být přihlášeni – aplikace vaší identitu zaznamená automaticky z přihlášení.
 
 ---
 
@@ -152,15 +154,14 @@ Stránka dostupná po přihlášení na adrese `/dashboard`. Obsahuje dvě sekce
 
 ### 6.1 Moje rezervace
 
-- Přehled všech vašich rezervací
+- Přehled pouze vašich vlastních rezervací (ostatní rezervace nevidíte)
 - U každé rezervace jsou zobrazeny:
-  - Název plavby, počet míst, datum rezervace
-  - Kontaktní jméno a e-mail
+  - Fotografie a název plavby, počet míst, termín plavby
 - Dostupné akce:
-  - **Detail plavby** – přejde na stránku plavby
-  - **Detail rezervace** – zobrazí podrobnosti rezervace
-  - **Upravit** – úprava rezervace
-  - **Zrušit** – smazání rezervace (po potvrzení)
+  - **Kliknutí na řádek (fotografie / název)** – přejde na veřejný detail plavby
+  - **Detail rezervace** – zobrazí podrobnosti vaší rezervace (počet míst, datum vytvoření)
+  - **Upravit** – přejde na formulář pro úpravu počtu míst
+  - **Zrušit rezervaci** – smazání rezervace (po potvrzení)
 
 ### 6.2 Moje plavby
 
@@ -194,15 +195,15 @@ Dostupné akce:
 Dostupná přes tlačítko **Upravit** (z Mého přehledu nebo z detailu rezervace).
 
 Lze změnit:
-- Počet míst
-- Kontaktní jméno
-- Kontaktní e-mail
+- **Počet míst** – minimálně 1, maximálně celková kapacita plavby
+
+> ℹ️ Kontaktní jméno a e-mail jsou předvyplněny z vašeho profilu a nelze je v editaci rezervace měnit. Pro změnu kontaktních údajů upravte svůj profil (`/me/edit`).
 
 ---
 
 ## 8. Vytváření a správa vlastních nabídek (Kapitán)
 
-> Tato část je dostupná všem přihlášeným uživatelům, ale doporučena zejména pro uživatele s rolí **Kapitán**.
+> Tato část je dostupná **pouze uživatelům s rolí Kapitán**. Tlačítko „Vytvořit nabídku" se v navigaci zobrazí jen po přihlášení jako kapitán.
 
 ### 8.1 Vytvoření nové nabídky
 
@@ -233,11 +234,11 @@ Lze změnit:
 3. Formulář je předvyplněn stávajícími údaji – změňte, co potřebujete.
 4. Klikněte na **Uložit** nebo **Zrušit** pro návrat bez uložení.
 
-### 8.3 Smazání nabídky
+### 8.3 Zrušení nabídky
 
 1. Přejděte na detail plavby nebo Můj přehled.
-2. Klikněte na **Smazat plavbu** / **Zrušit**.
-3. Potvrďte dialog „Opravdu smazat tuto nabídku?".
+2. Klikněte na **Zrušit plavbu** / **Zrušit**.
+3. Potvrďte dialog „Opravdu zrušit tuto plavbu?".
 4. Nabídka bude odstraněna a budete přesměrováni zpět.
 
 > ⚠️ **Upozornění:** Smazání nabídky je nevratné. Existující rezervace k dané plavbě zůstanou v databázi, ale plavba se uživatelům již nezobrazí.
@@ -251,8 +252,9 @@ Lze změnit:
 Klikněte na své **jméno (role)** v navigačním menu nebo přejděte na `/me`.
 
 Zobrazuje:
-- Jméno, e-mail, roli
-- Datum registrace a poslední změny
+- Inicialový avatar a jméno
+- Tři přehledové karty: **Role** (Člen posádky / Kapitán), **Člen od** (datum registrace), **Dní na palubě**
+- Detailní tabulka: jméno, e-mail, role, datum registrace, datum poslední změny
 
 ### 9.2 Úprava profilu
 
@@ -295,3 +297,15 @@ Klikněte na tlačítko **Odhlášení** v navigačním menu. Budete odhlášeni
 ### Zobrazuje se stránka „404 – Stránka nenalezena"
 - Zadali jste neplatnou adresu, nebo odkazovaná plavba / rezervace byla smazána.
 - Klikněte na **Domů** pro návrat na hlavní stránku.
+
+---
+
+## 12. Profil posádky (Crew)
+
+Na stránce profilu (`/me`) se uživatelům s rolí **Člen posádky** zobrazuje propagační sekce s přehledem výhod:
+
+- Výběr z pestré nabídky plaveb (rekreační, tréninkové, dobrodružné)
+- Snadná správa rezervací na jednom místě
+- Přímý kontakt s kapitánem přes rezervaci
+
+Chcete nabízet vlastní plavby? V nastavení profilu si změňte roli na **Kapitán**.

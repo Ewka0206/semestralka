@@ -9,18 +9,19 @@
 
 | Vrstva | Třídy |
 |--------|-------|
-| **Entity** | `User`, `Trip`, `Booking`, `TripType` |
+| **Entity** | `User`, `Trip`, `Booking`, `TripTypeDef`, `Country` |
 | **DTO** | `LoginRequest/Response`, `RegisterRequest`, `UpdateUserRequest`, `UserResponse`, `TripRequest`, `ErrorResponse` |
-| **Repository** | `UserRepository`, `TripRepository` (vlastní query), `BookingRepository` |
+| **Validace** | `@ValidDateRange` (custom Jakarta anotace), `DateRangeValidator` |
+| **Repository** | `UserRepository`, `TripRepository` (vlastní query + stránkování), `BookingRepository`, `TripTypeDefRepository`, `CountryRepository` |
 | **Service** | `AuthService`, `TripService`, `BookingService` |
-| **Controller** | `AuthController`, `TripController`, `BookingController`, `UserController` |
+| **Controller** | `AuthController`, `TripController`, `BookingController`, `UserController`, `TripTypeController`, `CountryController`, `UploadController` |
 | **Config** | `SecurityConfig`, `JwtUtil`, `JwtFilter`, `CorsConfig`, `OpenApiConfig` |
 
 Technologie: **Java 21 · Spring Boot 3.3 · Spring Security 6 · JJWT 0.12.6 · MariaDB · SpringDoc OpenAPI 2.6**
 
 ---
 
-## Oblast 1 – Architektura a struktura (3 b)
+## Oblast 1 – Architektura a struktura
 
 **Co říct:** Vícevrstvá architektura – každá vrstva má jednu odpovědnost. Controller zpracuje HTTP požadavek a deleguje na Service. Service obsahuje business logiku (validace emailu, mapování DTO→entita, pagination). Repository jen přistupuje k DB. DTO odděluje interní model od API kontraktu.
 
@@ -36,7 +37,7 @@ Controller  →  @Valid TripRequest (Bean Validation)
 
 ---
 
-## Oblast 2 – Bezpečnost a komunikace API (3 b)
+## Oblast 2 – Bezpečnost a komunikace API
 
 ### 2a. Registrace a JWT token
 ```bash
@@ -71,13 +72,25 @@ curl -s -X POST http://localhost:8080/api/trips \
   -d '{"location":"Korfu","type":"RELAX","startDate":"2026-06-01","endDate":"2026-06-08","capacity":0}'
 # → {"status":400,"message":"Neplatné vstupní údaje.",
 #    "errors":{"title":"Název plavby je povinný","capacity":"Kapacita musí být alespoň 1"}}
+
+# Custom @ValidDateRange: endDate < startDate → 400
+curl -s -X POST http://localhost:8080/api/trips \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN>" \
+  -d '{"title":"Korfu","location":"Korfu","type":"RELAX","startDate":"2026-07-10","endDate":"2026-07-01","capacity":8,"priceCzk":15000}'
+# → {"status":400,"message":"Neplatné vstupní údaje.",
+#    "errors":{"endDate":"Datum ukončení musí být stejné nebo pozdější než datum zahájení"}}
 ```
 
-**Co říct:** Validace probíhá na dvou úrovních – Bean Validation (`@NotBlank`, `@Min`) zachytí formátové chyby, Service vrstva vlastní business pravidla (duplicitní email → 409, špatné heslo → 401). `GlobalExceptionHandler` zajistí konzistentní `ErrorResponse` pro všechny chyby.
+**Co říct:** Validace probíhá na dvou úrovních:
+1. **Bean Validation** (`@NotBlank`, `@Min`) zachytí formátové chyby na úrovni DTO.
+2. **Custom Jakarta validátor** `@ValidDateRange` ověří, že `endDate ≥ startDate` – jako vlastní anotace s třídou `DateRangeValidator implements ConstraintValidator`.
+3. **Service vrstva** řeší business pravidla (duplicitní email → 409, špatné heslo → 401, nedostatek míst → 409).
+`GlobalExceptionHandler` zajistí konzistentní `ErrorResponse` pro všechny chyby.
 
 ---
 
-## Oblast 3 – Databáze, práce s daty a testování (3 b)
+## Oblast 3 – Databáze, práce s daty a testování
 
 ### 3a. CRUD
 - `POST /api/trips` → CREATE (s validací)
@@ -87,15 +100,21 @@ curl -s -X POST http://localhost:8080/api/trips \
 
 ### 3b. Složitější databázový dotaz (nativní SQL)
 ```sql
--- TripRepository.searchAvailable() – kombinuje:
+-- TripRepository.searchAvailable() – kombinuje 8 parametrů:
 --  • LIKE přes 3 sloupce (title, location, country)
---  • filtr typu plavby
---  • podmínka volných míst (capacity > booked)
+--  • filtr typu plavby, státu, termínu, maximální ceny
+--  • podmínka min. volných míst (capacity - booked >= minFreeSpots)
 --  • řazení podle data zahájení
 SELECT * FROM trips
-WHERE (:keyword = '' OR LOWER(title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR ...)
+WHERE (:keyword = '' OR LOWER(title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                     OR LOWER(location) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                     OR LOWER(country) LIKE LOWER(CONCAT('%', :keyword, '%')))
   AND (:type = '' OR type = :type)
-  AND capacity > booked
+  AND (:country = '' OR country = :country)
+  AND (:dateFrom = '' OR start_date >= :dateFrom)
+  AND (:dateTo = '' OR start_date <= :dateTo)
+  AND (:maxPrice < 0 OR price_czk <= :maxPrice)
+  AND (capacity - booked) >= :minFreeSpots
 ORDER BY start_date ASC
 ```
 
@@ -113,21 +132,21 @@ curl "http://localhost:8080/api/trips/search?type=Relax&page=1&size=5"
 curl "http://localhost:8080/api/trips/search?q=korfu&page=0&size=3"
 ```
 
-### 3d. Testy (34 unit testů)
+### 3d. Testy (39 unit testů)
 ```
-AuthServiceTest    – 10 testů (login, register, updateUser – happy path i edge cases)
-TripServiceTest    – 11 testů (getAll, getById, search + stránkování, create, update, delete)
-BookingServiceTest –  8 testů
-GlobalExceptionHandlerTest – 5 testů
+AuthServiceTest              – 10 testů (login, register, updateUser – happy path i edge cases)
+TripServiceTest              – 12 testů (getAll, getById, search + stránkování, create, update, delete)
+BookingServiceTest           – 12 testů (+ create/delete aktualizuje trip.booked, upsert, kontrola kapacity)
+GlobalExceptionHandlerTest   –  5 testů
 ```
 ```bash
 cd backend && ./mvnw test
-# → Tests run: 34, Failures: 0, Errors: 0
+# → Tests run: 39, Failures: 0, Errors: 0
 ```
 
 ---
 
-## Oblast 4 – Dokumentace a obhajoba (3 b)
+## Oblast 4 – Dokumentace a obhajoba
 
 ### 4a. Swagger UI
 ```
@@ -196,5 +215,7 @@ curl -X DELETE http://localhost:8080/api/trips/korfu-2026-06 \
 | Kde se ověřuje JWT? | `JwtFilter extends OncePerRequestFilter` – každý request před controllerem |
 | Proč DTO místo entity? | Oddělení API kontraktu od DB modelu; validace bez zasahování do entity |
 | Jak funguje stránkování? | `Pageable` parametr v repository, `countQuery` pro `totalElements` |
+| Jak funguje upsert rezervací? | `BookingRepository.findByUserIdAndTripId()` – pokud existuje, update; jinak create; userId vždy z JWT |
+| Jak se aktualizuje `booked`? | `BookingService` je `@Transactional`, při create/delete atomicky mění `trip.booked` v `TripRepository` |
 | Kde jsou testy? | `backend/src/test/java/com/sailconnect/service/` |
 | Jak spustit? | `cd backend && ./mvnw spring-boot:run` (vyžaduje MariaDB na portu 3306) |

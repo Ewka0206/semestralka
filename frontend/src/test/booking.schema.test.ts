@@ -3,42 +3,27 @@ import { bookingSchema } from "../features/bookings/schemas";
 
 describe("bookingSchema", () => {
     it("validní data projdou", () => {
-        const res = bookingSchema.safeParse({
-            contactName: "Efka",
-            contactEmail: "efka@email.cz",
-            seats: 2,
-        });
-
+        const res = bookingSchema.safeParse({ seats: 2 });
         expect(res.success).toBe(true);
     });
 
-    it("nevalidní email neprojde", () => {
-        const res = bookingSchema.safeParse({
-            contactName: "Efka",
-            contactEmail: "spatne",
-            seats: 2,
-        });
-
-        expect(res.success).toBe(false);
-    });
-
     it("seats < 1 neprojde", () => {
-        const res = bookingSchema.safeParse({
-            contactName: "Efka",
-            contactEmail: "efka@email.cz",
-            seats: 0,
-        });
-
+        const res = bookingSchema.safeParse({ seats: 0 });
         expect(res.success).toBe(false);
     });
 
-    it("jméno kratší než minimum neprojde", () => {
-        const res = bookingSchema.safeParse({
-            contactName: "E",
-            contactEmail: "efka@email.cz",
-            seats: 1,
-        });
+    it("záporný počet míst neprojde", () => {
+        const res = bookingSchema.safeParse({ seats: -3 });
+        expect(res.success).toBe(false);
+    });
 
+    it("chybějící seats neprojde", () => {
+        const res = bookingSchema.safeParse({});
+        expect(res.success).toBe(false);
+    });
+
+    it("desetinný počet míst neprojde", () => {
+        const res = bookingSchema.safeParse({ seats: 1.5 });
         expect(res.success).toBe(false);
     });
 });

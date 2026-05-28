@@ -33,7 +33,7 @@
 │                        port 5173 (dev)                      │
 └───────────────────────────┬─────────────────────────────────┘
                             │ HTTP REST (JSON)
-                            │ hlavička X-User-Id
+                            │ hlavička Authorization: Bearer <JWT>
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
 │               Backend – Spring Boot 3.3                     │
@@ -55,9 +55,11 @@
 |--------|-------------|-------|
 | Frontend | React, TypeScript, Vite | React 19, Vite 6 |
 | Backend | Spring Boot, Spring MVC | 3.3.x |
+| Zabezpečení | Spring Security 6, JJWT | 0.12.6 |
 | ORM | Spring Data JPA / Hibernate | – |
 | Databáze | MariaDB | 10.6+ |
 | Zabezpečení hesel | BCrypt | – |
+| API dokumentace | SpringDoc OpenAPI | 2.6 |
 | Build FE | npm | 10+ |
 | Build BE | Maven | 3.9+ |
 
@@ -123,7 +125,7 @@ cd backend
 mvnw.cmd spring-boot:run      # Windows
 ```
 
-Při prvním startu Hibernate automaticky vytvoří tabulky a `DataSeeder` naplní databázi ukázkovými daty (20 nabídek plaveb, 3 typy plaveb).
+Při prvním startu Hibernate automaticky vytvoří tabulky a `DataSeeder` naplní databázi ukázkovými daty (19 nabídek plaveb, 3 typy plaveb, 190 zemí světa).
 
 ### 3.5 Spuštění vývojového serveru frontendu
 
@@ -228,7 +230,8 @@ Výstup bude v adresáři `frontend/dist/` – obsah nasaďte na webový server 
 | `users` | Uživatelské účty |
 | `trips` | Nabídky plaveb |
 | `bookings` | Rezervace |
-| `trip_type_def` | Číselník typů plaveb |
+| `trip_type_def` | Číselník typů plaveb (RELAX, TRAINING, ADVENTURE) |
+| `country` | Číselník zemí světa (190 záznamů, ISO 3166-1 alpha-2) |
 
 ### 6.2 Schéma tabulky `users`
 
@@ -312,8 +315,10 @@ GROUP BY t.id;
 **Aktualizace počtu rezervovaných míst (v případě nesouladu):**
 ```sql
 UPDATE trips t
-SET t.booked = (SELECT COUNT(*) * AVG(b.seats) 
-                FROM bookings b WHERE b.trip_id = t.id)
+SET t.booked = COALESCE(
+    (SELECT SUM(b.seats) FROM bookings b WHERE b.trip_id = t.id),
+    0
+)
 WHERE t.id = 'id-plavby';
 ```
 
@@ -399,7 +404,10 @@ java -jar target/sailconnect-*.jar
 | Endpoint | Očekávaná odpověď |
 |----------|-------------------|
 | `GET http://localhost:8080/api/trips` | JSON pole plaveb |
-| `GET http://localhost:8080/api/trip-types` | `[{"id":1,"code":"Training",...}]` |
+| `GET http://localhost:8080/api/trips/search?type=RELAX&page=0&size=5` | Stránkovaný výsledek `{"content":[...],"totalElements":N,...}` |
+| `GET http://localhost:8080/api/trip-types` | `[{"code":"RELAX","label":"Rekreační plavba"},...]` |
+| `GET http://localhost:8080/api/countries` | JSON pole 190 zemí (code + name) |
+| `GET http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | `http://localhost:5173` | Domovská stránka aplikace |
 
 ---
@@ -419,7 +427,7 @@ Testy jsou umístěny v `backend/src/test/java/com/sailconnect/`:
 - `service/BookingServiceTest.java` – testy rezervací
 - `exception/GlobalExceptionHandlerTest.java` – testy ošetření chyb
 
-Celkem: **28 testů**
+Celkem: **39 testů** (AuthServiceTest: 10, TripServiceTest: 12, BookingServiceTest: 12, GlobalExceptionHandlerTest: 5)
 
 ### 9.2 Frontend testy
 
@@ -430,7 +438,12 @@ npm test
 npm run test
 ```
 
-Celkem: **23 testů**
+Celkem: **24 testů** (5 testovacích souborů)
+
+API dokumentace je dostupná po spuštění backendu na:
+```
+http://localhost:8080/swagger-ui.html
+```
 
 ### 9.3 Postman kolekce
 
@@ -554,12 +567,21 @@ DELETE FROM users WHERE id = 'uuid-uzivatele';
 ### 11.3 Přidání nového typu plavby
 
 ```sql
-INSERT INTO trip_type_def (code, label) VALUES ('Racing', 'Závodní plavba');
+INSERT INTO trip_type_def (code, label) VALUES ('RACING', 'Závodní plavba');
 ```
 
 > Po přidání nového kódu je nutné ho přidat také do výčtu `TripType.java` v backendu a sestavit aplikaci znovu.
 
-### 11.4 Zobrazení logů backendu
+### 11.4 Zobrazení Swagger API dokumentace
+
+Po spuštění backendu jsou všechny endpointy zdokumentovány na:
+```
+http://localhost:8080/swagger-ui.html
+```
+
+Zobrazuje rozdělení do skupin (Auth, Plavby, Rezervace, Uživatelé, Číselníky, Upload), schémata požadavků a odpovědí a umožňuje volání API přímo z prohlížeče po zadání Bearer tokenu přes tlačítko **Authorize**.
+
+### 11.5 Zobrazení logů backendu
 
 ```bash
 # Pokud běží jako systemd služba

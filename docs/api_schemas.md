@@ -2,7 +2,7 @@
 
 > Základní URL: `http://localhost:8080`  
 > Formát: JSON (Content-Type: `application/json`)  
-> Autentizace: bezstavová – ID přihlášeného uživatele se předává v hlavičce `X-User-Id`
+> Autentizace: **JWT Bearer token** – po přihlášení přidejte do každého chráněného požadavku hlavičku `Authorization: Bearer <token>`
 
 ---
 
@@ -191,7 +191,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
     "title":           { "type": "string", "minLength": 1,                           "description": "Název výletu" },
     "location":        { "type": "string", "minLength": 1,                           "description": "Místo odjezdu / přístav" },
     "country":         { "type": ["string", "null"],                                 "description": "Stát / region" },
-    "type":            { "type": "string", "enum": ["Training", "Adventure", "Relax"], "description": "Typ výletu" },
+    "type":            { "type": "string", "enum": ["RELAX", "TRAINING", "ADVENTURE"], "description": "Typ plavby (uppercase kód z číselníku /api/trip-types)" },
     "startDate":       { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$",     "description": "Datum zahájení (YYYY-MM-DD)" },
     "endDate":         { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$",     "description": "Datum ukončení (YYYY-MM-DD)" },
     "priceCzk":        { "type": "integer", "minimum": 0,                            "description": "Cena v Kč za osobu" },
@@ -201,7 +201,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
     "highlights":      { "type": "array", "items": { "type": "string" },             "description": "Klíčové body / atrakce výletu" },
     "description":     { "type": ["string", "null"],                                 "description": "Podrobný popis výletu" },
     "imageUrl":        { "type": ["string", "null"], "format": "uri-reference",      "description": "Relativní cesta k fotografii" },
-    "ownerUserId":     { "type": ["string", "null"],                                 "description": "UUID majitele výletu; lze předat přes X-User-Id" }
+    "ownerUserId":     { "type": ["string", "null"],                                 "description": "UUID majitele plavby; při POST se nastaví automaticky z JWT tokenu" }
   },
   "required": ["title", "location", "type", "startDate", "endDate"]
 }
@@ -250,11 +250,12 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
 
 | Metoda | URL | Parametry / hlavičky | Popis | HTTP kódy |
 |--------|-----|----------------------|-------|-----------|
-| GET | `/api/trips` | `?owner={userId}` (volitelný) | Vrátí seznam všech výletů; lze filtrovat podle vlastníka | 200 |
-| GET | `/api/trips/{id}` | – | Detail jednoho výletu | 200, 404 |
-| POST | `/api/trips` | `X-User-Id` (volitelný) | Vytvoří nový výlet | 201, 400 |
-| PUT | `/api/trips/{id}` | – | Aktualizuje výlet | 200, 400, 404 |
-| DELETE | `/api/trips/{id}` | – | Smaže výlet | 204, 404 |
+| GET | `/api/trips` | `?owner={userId}` (volitelný) | Vrátí seznam všech plaveb; lze filtrovat podle vlastníka | 200 |
+| GET | `/api/trips/search` | `?q`, `type`, `country`, `dateFrom`, `dateTo`, `maxPrice`, `minFreeSpots`, `page`, `size` | Vyhledávání plaveb s filtry; vrací stránkovaný výsledek (`Page<Trip>`) | 200 |
+| GET | `/api/trips/{id}` | – | Detail jedné plavby | 200, 404 |
+| POST | `/api/trips` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Vytvoří novou plavbu; vlastník se nastaví z JWT | 201, 400, 401, 403 |
+| PUT | `/api/trips/{id}` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Aktualizuje plavbu | 200, 400, 401, 403, 404 |
+| DELETE | `/api/trips/{id}` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Smaže plavbu | 204, 401, 403, 404 |
 
 ---
 
@@ -274,7 +275,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
     "seats":        { "type": "integer", "minimum": 1,              "description": "Počet rezervovaných míst" },
     "contactName":  { "type": "string",  "minLength": 1,            "description": "Jméno kontaktní osoby" },
     "contactEmail": { "type": "string",  "format": "email",         "description": "E-mail kontaktní osoby" },
-    "userId":       { "type": ["string", "null"],                   "description": "UUID přihlášeného uživatele; lze předat přes X-User-Id" }
+    "userId":       { "type": ["string", "null"],                   "description": "UUID přihlášeného uživatele; nastavuje se automaticky z JWT tokenu (hodnota předaná v těle se ignoruje)" }
   },
   "required": ["tripId", "seats", "contactName", "contactEmail"]
 }
@@ -308,11 +309,11 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
 
 | Metoda | URL | Parametry / hlavičky | Popis | HTTP kódy |
 |--------|-----|----------------------|-------|-----------|
-| GET | `/api/bookings` | `X-User-Id` (volitelný) | Vrátí rezervace; je-li předáno ID, filtruje pouze rezervace daného uživatele | 200 |
-| GET | `/api/bookings/{id}` | – | Detail jedné rezervace | 200, 404 |
-| POST | `/api/bookings` | `X-User-Id` (volitelný) | Vytvoří novou rezervaci | 201, 400, 409 |
-| PUT | `/api/bookings/{id}` | – | Aktualizuje rezervaci | 200, 400, 404 |
-| DELETE | `/api/bookings/{id}` | – | Zruší rezervaci | 204, 404 |
+| GET | `/api/bookings` | `Authorization: Bearer <token>` (✔ CREW+) | Vrátí rezervace přihlášeného uživatele (userId z JWT) | 200, 401 |
+| GET | `/api/bookings/{id}` | `Authorization: Bearer <token>` (✔ CREW+) | Detail jedné rezervace | 200, 401, 404 |
+| POST | `/api/bookings` | `Authorization: Bearer <token>` (✔ CREW+) | Vytvoří nebo aktualizuje rezervaci (upsert dle userId + tripId) | 201, 400, 401, 409 |
+| PUT | `/api/bookings/{id}` | `Authorization: Bearer <token>` (✔ CREW+) | Aktualizuje rezervaci | 200, 400, 401, 404 |
+| DELETE | `/api/bookings/{id}` | `Authorization: Bearer <token>` (✔ CREW+) | Zruší rezervaci | 204, 401, 404 |
 
 ---
 
@@ -345,11 +346,45 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
 
 | Metoda | URL | Popis | HTTP kód |
 |--------|-----|-------|----------|
-| GET | `/api/trip-types` | Vrátí seznam všech dostupných typů výletů | 200 |
+| GET | `/api/trip-types` | Vrátí seznam všech dostupných typů plavby | 200 |
 
 ---
 
-## 6. Nahrávání obrázků – `/api/upload`
+## 6. Číselník zemí – `/api/countries`
+
+### Country (odpověď)
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "Country",
+  "type": "object",
+  "properties": {
+    "code": { "type": "string", "description": "ISO 3166-1 alpha-2 kód státu (např. CZ, GR, HR)" },
+    "name": { "type": "string", "description": "Český název státu (např. Česká republika, Řecko, Chorvatsko)" }
+  },
+  "required": ["code", "name"]
+}
+```
+
+**Příklad odpovědi (GET `/api/countries`):**
+```json
+[
+  { "code": "CZ", "name": "Česká republika" },
+  { "code": "GR", "name": "Řecko" },
+  { "code": "HR", "name": "Chorvatsko" }
+]
+```
+
+Číselník obsahuje 190 zemí světa. Hodnota `name` se předává jako `country` při vytváření/editaci plavby.
+
+| Metoda | URL | Popis | HTTP kód |
+|--------|-----|-------|----------|
+| GET | `/api/countries` | Vrátí seznam 190 zemí světa (code + name) | 200 |
+
+---
+
+## 7. Nahrávání obrázků – `/api/upload`
 
 ### Upload (multipart/form-data)
 `POST /api/upload`
@@ -394,21 +429,24 @@ Požadavek se odesílá jako `multipart/form-data`, **ne JSON**. Pole se jmenuje
 
 ## Přehled všech endpointů
 
-| Skupina | Metoda | URL | Popis |
-|---------|--------|-----|-------|
-| Auth | POST | `/api/auth/login` | Přihlášení |
-| Auth | POST | `/api/auth/register` | Registrace |
-| Uživatelé | GET | `/api/users/{id}` | Detail uživatele |
-| Uživatelé | PUT | `/api/users/{id}` | Úprava profilu |
-| Výlety | GET | `/api/trips` | Seznam výletů |
-| Výlety | GET | `/api/trips/{id}` | Detail výletu |
-| Výlety | POST | `/api/trips` | Nový výlet |
-| Výlety | PUT | `/api/trips/{id}` | Úprava výletu |
-| Výlety | DELETE | `/api/trips/{id}` | Smazání výletu |
-| Rezervace | GET | `/api/bookings` | Seznam rezervací |
-| Rezervace | GET | `/api/bookings/{id}` | Detail rezervace |
-| Rezervace | POST | `/api/bookings` | Nová rezervace |
-| Rezervace | PUT | `/api/bookings/{id}` | Úprava rezervace |
-| Rezervace | DELETE | `/api/bookings/{id}` | Zrušení rezervace |
-| Typy výletů | GET | `/api/trip-types` | Číselník typů výletů |
-| Upload | POST | `/api/upload` | Nahrání obrázku |
+| Skupina | Metoda | URL | Auth | Popis |
+|---------|--------|-----|------|-------|
+| Auth | POST | `/api/auth/login` | ✗ | Přihlášení, vrátí JWT token |
+| Auth | POST | `/api/auth/register` | ✗ | Registrace, vrátí JWT token |
+| Uživatelé | GET | `/api/users/{id}` | ✔ CREW+ | Detail uživatele |
+| Uživatelé | PUT | `/api/users/{id}` | ✔ CREW+ | Úprava profilu |
+| Plavby | GET | `/api/trips` | ✗ | Seznam plaveb |
+| Plavby | GET | `/api/trips/search` | ✗ | Vyhledávání + stránkování plaveb |
+| Plavby | GET | `/api/trips/{id}` | ✗ | Detail plavby |
+| Plavby | POST | `/api/trips` | ✔ CAPTAIN | Nová plavba |
+| Plavby | PUT | `/api/trips/{id}` | ✔ CAPTAIN | Úprava plavby |
+| Plavby | DELETE | `/api/trips/{id}` | ✔ CAPTAIN | Smazání plavby |
+| Rezervace | GET | `/api/bookings` | ✔ CREW+ | Seznam rezervací přihlášeného uživatele |
+| Rezervace | GET | `/api/bookings/{id}` | ✔ CREW+ | Detail rezervace |
+| Rezervace | POST | `/api/bookings` | ✔ CREW+ | Nová / aktualizovaná rezervace (upsert) |
+| Rezervace | PUT | `/api/bookings/{id}` | ✔ CREW+ | Úprava rezervace |
+| Rezervace | DELETE | `/api/bookings/{id}` | ✔ CREW+ | Zrušení rezervace |
+| Číselníky | GET | `/api/trip-types` | ✗ | Číselník typů plavby |
+| Číselníky | GET | `/api/countries` | ✗ | Číselník 190 zemí světa |
+| Upload | POST | `/api/upload` | ✔ CREW+ | Nahrání obrázku |
+| Monitoring | GET | `/actuator/health` | ✗ | Stav aplikace a DB |

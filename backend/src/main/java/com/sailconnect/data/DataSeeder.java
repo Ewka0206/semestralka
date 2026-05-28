@@ -272,7 +272,7 @@ public class DataSeeder implements CommandLineRunner {
 
             trip("skotsko-2026-07",
                 "Skotsko – divoké pobřeží a whisky plavba",
-                "/images/trips/Skotsko_zatoka_Tarbert_800.webp", "Tarbert", "Skotsko",
+                "/images/trips/Skotsko_zatoka_Tarbert_800.webp", "Tarbert - Skotsko", "Velká Británie",
                 TripType.ADVENTURE, "2026-07-18", "2026-07-25", 22000, 6, 1,
                 List.of("Zátoky a fjordy", "Ochutnávka skotské whisky", "Plavba za tuleňů a delfíny"),
                 "Divoké skotské pobřeží plné záhad, mlhy a nezapomenutelných zážitků."),
@@ -286,7 +286,7 @@ public class DataSeeder implements CommandLineRunner {
 
             trip("azory-2026-05",
                 "Azory – atlantická odysea uprostřed oceánu",
-                "/images/trips/sailing_800.webp", "Ponta Delgada", "Portugaltsko",
+                "/images/trips/sailing_800.webp", "Ponta Delgada", "Portugalsko",
                 TripType.ADVENTURE, "2026-05-02", "2026-05-16", 28000, 6, 2,
                 List.of("Přeplavy mezi ostrovy", "Velryby a delfíni", "Vulkanická krajina"),
                 "Dvoutýdenní plavba Azorskými ostrovy – divočina, oceán a sopky."),

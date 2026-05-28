@@ -1,8 +1,24 @@
 import { apiFetch, authHeaders } from "../../lib/api";
 import type { Trip } from "./types";
+import type { TripFiltersState } from "./utils";
 
 export async function getAllTrips(): Promise<Trip[]> {
     return apiFetch<Trip[]>("/trips");
+}
+
+/** Zavolá /api/trips/search s filtry a vrátí pole plaveb (obsah první stránky, size=200). */
+export async function searchTrips(filters: TripFiltersState): Promise<Trip[]> {
+    const params = new URLSearchParams();
+    if (filters.type && filters.type !== "Any") params.set("type", filters.type);
+    if (filters.country)                        params.set("country", filters.country);
+    if (filters.dateFrom)                       params.set("dateFrom", filters.dateFrom);
+    if (filters.dateTo)                         params.set("dateTo", filters.dateTo);
+    if (filters.maxPriceCzk != null)            params.set("maxPrice", String(filters.maxPriceCzk));
+    if (filters.minFreeSpots != null)           params.set("minFreeSpots", String(filters.minFreeSpots));
+    params.set("page", "0");
+    params.set("size", "200");
+    const page = await apiFetch<{ content: Trip[] }>(`/trips/search?${params.toString()}`);
+    return page.content;
 }
 
 export async function getUserTrips(ownerUserId?: string): Promise<Trip[]> {

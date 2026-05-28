@@ -42,23 +42,36 @@ public class TripService {
     }
 
     /**
-     * Vyhledává dostupné plavby podle klíčového slova, typu a stránkovacích parametrů.
+     * Vyhledává dostupné plavby podle všech dostupných filtrů přímo v databázi.
      *
      * <p>Hledá v polích title, location a country. Vrací pouze plavby
-     * s alespoň jedním volným místem, seřazené podle data zahájení.
+     * s dostatečným počtem volných míst, seřazené podle data zahájení.
      *
-     * @param keyword  hledaný výraz (null nebo prázdný = ignorovat)
-     * @param typeStr  typ plavby jako string ("Training", "Relax", "Adventure") nebo null
-     * @param pageable stránkovací parametry ({@code page} od 0, {@code size} počet na stránku)
+     * @param keyword      hledaný výraz (null nebo prázdný = ignorovat)
+     * @param typeStr      typ plavby jako string ("Training", "Relax", "Adventure") nebo null
+     * @param country      přesný název státu nebo null/prázdný = bez filtru
+     * @param dateFrom     datum zahájení od (YYYY-MM-DD) nebo null/prázdný = bez filtru
+     * @param dateTo       datum zahájení do (YYYY-MM-DD) nebo null/prázdný = bez filtru
+     * @param maxPrice     maximální cena v Kč; null nebo záporná = bez filtru
+     * @param minFreeSpots minimální počet volných míst; null = 1 (alespoň jedno)
+     * @param pageable     stránkovací parametry ({@code page} od 0, {@code size} počet na stránku)
      * @return stránka dostupných plaveb včetně metadat (totalElements, totalPages…)
      */
-    public Page<Trip> search(String keyword, String typeStr, Pageable pageable) {
-        String kw   = (keyword == null) ? "" : keyword.trim();
-        // Převod "Relax" → "RELAX" aby seděl s @Enumerated(EnumType.STRING) hodnotou v DB
-        String type = (typeStr == null || typeStr.isBlank()) ? "" : typeStr.trim().toUpperCase();
-        log.info("Vyhledávání plaveb: keyword='{}', type={}, stránka {}/{}",
-                kw, type, pageable.getPageNumber(), pageable.getPageSize());
-        Page<Trip> results = tripRepo.searchAvailable(kw, type, pageable);
+    public Page<Trip> search(String keyword, String typeStr,
+                             String country, String dateFrom, String dateTo,
+                             Integer maxPrice, Integer minFreeSpots,
+                             Pageable pageable) {
+        String kw      = (keyword == null) ? "" : keyword.trim();
+        String type    = (typeStr == null  || typeStr.isBlank())  ? "" : typeStr.trim().toUpperCase();
+        String ctr     = (country == null  || country.isBlank())  ? "" : country.trim();
+        String from    = (dateFrom == null || dateFrom.isBlank()) ? "" : dateFrom.trim();
+        String to      = (dateTo == null   || dateTo.isBlank())   ? "" : dateTo.trim();
+        int    maxP    = (maxPrice == null    || maxPrice < 0)    ? -1 : maxPrice;
+        int    minFree = (minFreeSpots == null || minFreeSpots < 1) ? 1 : minFreeSpots;
+
+        log.info("Vyhledávání plaveb: keyword='{}', type={}, country='{}', od={}, do={}, maxCena={}, minVolnych={}, stránka {}/{}",
+                kw, type, ctr, from, to, maxP, minFree, pageable.getPageNumber(), pageable.getPageSize());
+        Page<Trip> results = tripRepo.searchAvailable(kw, type, ctr, from, to, maxP, minFree, pageable);
         log.debug("Nalezeno {} plaveb celkem, {} stránek",
                 results.getTotalElements(), results.getTotalPages());
         return results;
