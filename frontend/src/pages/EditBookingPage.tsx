@@ -17,35 +17,44 @@ export function EditBookingPage() {
     const nav = useNavigate();
     const user = getCurrentUser();
 
-    const [booking, setBooking] = useState<Booking | null | undefined>(undefined);
+    // undefined = načítám, null = nenalezeno
+    const [booking, setBooking] = useState<Booking | null | undefined>(!bookingId ? null : undefined);
     const [trip, setTrip] = useState<Trip | null>(null);
     const [apiError, setApiError] = useState<string | null>(null);
 
-    const form = useForm<BookingForm>({
+    const {
+        register,
+        handleSubmit,
+        setError,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<BookingForm>({
+        // zodResolver a react-hook-form mají mírnou neshodu generik – cast je bezpečný
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(bookingSchema) as any,
         mode: "onBlur",
     });
 
     useEffect(() => {
-        if (!bookingId) { setBooking(null); return; }
-        getBookingById(bookingId).then((b) => {
-            setBooking(b);
-            if (b) {
-                form.reset({ seats: b.seats });
-                getTripById(b.tripId).then(setTrip);
-            }
-        });
-    }, [bookingId]);
+        if (!bookingId) return;
+        getBookingById(bookingId)
+            .then((b) => {
+                setBooking(b ?? null);
+                if (b) {
+                    reset({ seats: b.seats });
+                    getTripById(b.tripId).then(setTrip);
+                }
+            })
+            .catch(() => setBooking(null));
+    }, [bookingId, reset]);
 
     if (booking === undefined) return <div className="container stack"><p className="muted">Načítám...</p></div>;
     if (!booking) return <NotFoundPage />;
 
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = form;
-
     const onSubmit = async (values: BookingForm) => {
         setApiError(null);
         if (trip && values.seats > trip.capacity) {
-            form.setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
+            setError("seats", { type: "manual", message: "Počet míst je mimo kapacitu plavby." });
             return;
         }
         try {

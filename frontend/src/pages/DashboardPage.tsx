@@ -20,10 +20,10 @@ export function DashboardPage() {
     useEffect(() => {
         getAllTrips().then(setAllTrips).catch(console.error);
         getBookings().then(setBookings).catch(console.error);
-        if (user) {
-            getUserTrips(user.id).then(setMyOffers).catch(console.error);
+        if (authUser) {
+            getUserTrips(authUser.id).then(setMyOffers).catch(console.error);
         }
-    }, []);
+    }, [authUser]);
 
     async function handleDeleteOffer(tripId: string) {
         if (!confirm("Opravdu zrušit tuto plavbu?")) return;

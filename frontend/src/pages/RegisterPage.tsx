@@ -29,8 +29,9 @@ export function RegisterPage() {
                 role: values.role,
             });
             nav("/dashboard");
-        } catch (e: any) {
-            if (e.message?.includes("already exists") || e.message?.includes("409")) {
+        } catch (e: unknown) {
+            const msg = e instanceof Error ? e.message : "";
+            if (msg.includes("already exists") || msg.includes("409")) {
                 setError("email", { type: "manual", message: "Uživatel s tímto emailem už existuje." });
             } else {
                 setError("email", { type: "manual", message: "Registrace se nezdařila." });
@@ -70,6 +71,7 @@ export function RegisterPage() {
                             <option value="crew">⛵ Člen posádky</option>
                             <option value="captain">🧭 Kapitán</option>
                         </select>
+                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         <FormError error={errors.role as any} />
                     </label>
 

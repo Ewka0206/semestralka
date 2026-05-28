@@ -16,7 +16,7 @@ const trip: Trip = {
     title: "Test trip",
     location: "Korfu",
     country: "Řecko",
-    type: "Rekreace" as any,
+    type: "Relax",
     startDate: "2026-06-06",
     endDate: "2026-06-13",
     priceCzk: 17000,

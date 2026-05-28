@@ -19,7 +19,8 @@ export function TripDetailPage() {
     const nav = useNavigate();
     const user = getCurrentUser();
 
-    const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
+    // undefined = načítám, null = nenalezeno
+    const [trip, setTrip] = useState<Trip | null | undefined>(!tripId ? null : undefined);
     const [existingBooking, setExistingBooking] = useState<Booking | null>(null);
     const [done, setDone] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -27,14 +28,17 @@ export function TripDetailPage() {
     const typeLabel = tripTypes.find((t) => t.code === trip?.type)?.label ?? trip?.type ?? "";
 
     useEffect(() => {
-        if (!tripId) { setTrip(null); return; }
-        getTripById(tripId).then(setTrip).catch(() => setTrip(null));
-        // Načti existující rezervaci přihlášeného uživatele pro tuto plavbu
-        if (user) {
-            getBookings()
-                .then((bs) => setExistingBooking(bs.find((b) => b.tripId === tripId) ?? null))
-                .catch(() => setExistingBooking(null));
-        }
+        if (!tripId) return;
+        getTripById(tripId).then((t) => setTrip(t ?? null)).catch(() => setTrip(null));
+    }, [tripId]);
+
+    useEffect(() => {
+        if (!tripId || !user) return;
+        getBookings()
+            .then((bs) => setExistingBooking(bs.find((b) => b.tripId === tripId) ?? null))
+            .catch(() => setExistingBooking(null));
+        // user je záměrně mimo deps – je stabilní po dobu životnosti komponenty
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tripId]);
 
     const isOwnOffer = Boolean(user && trip?.ownerUserId && trip.ownerUserId === user.id);
@@ -46,6 +50,7 @@ export function TripDetailPage() {
         reset,
         formState: { errors, isSubmitting },
     } = useForm<BookingForm>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(bookingSchema) as any,
         defaultValues: { seats: 1 },
         mode: "onBlur",
@@ -54,7 +59,7 @@ export function TripDetailPage() {
     // Jakmile se načte existující rezervace, předvyplň formulář
     useEffect(() => {
         if (existingBooking) reset({ seats: existingBooking.seats });
-    }, [existingBooking]);
+    }, [existingBooking, reset]);
 
     if (trip === undefined) {
         return <div className="container stack"><p className="muted">Načítám...</p></div>;
@@ -94,10 +99,11 @@ export function TripDetailPage() {
             setTrip(updated);
             setExistingBooking(saved);
             setDone(true);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const errMsg = err instanceof Error ? err.message : String(err);
             let msg: string | null = null;
-            try { msg = JSON.parse(err?.message)?.message ?? null; } catch { /* není JSON */ }
-            setApiError(msg ?? err?.message ?? "Rezervaci se nepodařilo uložit. Zkuste to znovu.");
+            try { msg = JSON.parse(errMsg)?.message ?? null; } catch { /* není JSON */ }
+            setApiError(msg ?? errMsg ?? "Rezervaci se nepodařilo uložit. Zkuste to znovu.");
         }
     };
 

@@ -21,6 +21,7 @@ export function EditOfferPage() {
     const countries = useCountries();
 
     const form = useForm<CreateOfferForm>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(createOfferSchema) as any,
         defaultValues: {
             title: "", location: "", country: "", type: "Training",
@@ -30,12 +31,17 @@ export function EditOfferPage() {
         mode: "onBlur",
     });
 
+    const { reset } = form;
+
     useEffect(() => {
-        if (!tripId) { setTrip(null); return; }
+        if (!tripId) {
+            setTrip(null);
+            return;
+        }
         getTripById(tripId).then((t) => {
-            setTrip(t);
+            setTrip(t ?? null);
             if (t) {
-                form.reset({
+                reset({
                     title: t.title,
                     location: t.location,
                     country: t.country ?? "",
@@ -49,8 +55,8 @@ export function EditOfferPage() {
                     imageUrl: t.imageUrl ?? "",
                 });
             }
-        });
-    }, [tripId]);
+        }).catch(() => setTrip(null));
+    }, [tripId, reset]);
 
     if (trip === undefined) return <div className="container stack"><p className="muted">Načítám...</p></div>;
     if (!trip) return <NotFoundPage />;
@@ -128,6 +134,7 @@ export function EditOfferPage() {
                             <option key={t.code} value={t.code}>{t.label}</option>
                         ))}
                     </select>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <FormError error={errors.type as any} />
                 </label>
 
@@ -170,6 +177,7 @@ export function EditOfferPage() {
                 <div className="field">
                     <span>Obrázek</span>
                     <ImageUpload
+                        // eslint-disable-next-line react-hooks/incompatible-library
                         value={watch("imageUrl") ?? trip.imageUrl ?? ""}
                         onChange={(url) => setValue("imageUrl", url)}
                     />

@@ -1,9 +1,20 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getCurrentUser } from "../features/auth/repo";
 import { userRoleLabels } from "../features/auth/i18n";
 
 export function UserDetailPage() {
     const user = getCurrentUser();
+
+    // useMemo MUSÍ být před early return – Rules of Hooks.
+    // Date.now() je záměrně uvnitř useMemo (memoizuje se při mount, akceptovatelná nepřesnost).
+    const daysSince = useMemo(
+        () => user
+            // eslint-disable-next-line react-hooks/purity
+            ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86_400_000)
+            : 0,
+        [user],
+    );
 
     if (!user) {
         return (
@@ -17,11 +28,10 @@ export function UserDetailPage() {
         );
     }
 
-    const roleLabel = userRoleLabels[user.role];
-    const roleIcon  = user.role === "captain" ? "⛵" : "🧑‍✈️";
-    const initials  = user.name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+    const roleLabel  = userRoleLabels[user.role];
+    const roleIcon   = user.role === "captain" ? "⛵" : "🧑‍✈️";
+    const initials   = user.name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
     const memberSince = new Date(user.createdAt).toLocaleDateString("cs-CZ", { year: "numeric", month: "long" });
-    const daysSince = Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86_400_000);
 
     return (
         <div className="container stack">

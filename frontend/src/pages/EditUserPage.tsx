@@ -31,11 +31,13 @@ export function EditUserPage() {
         shouldUnregister: false,
     });
 
+    const { reset } = form;
+
     useEffect(() => {
         if (!user || initialized.current) return;
         initialized.current = true;
-        form.reset({ name: user.name ?? "", email: user.email ?? "", role: user.role });
-    }, [user]);
+        reset({ name: user.name ?? "", email: user.email ?? "", role: user.role });
+    }, [user, reset]);
 
     if (!user) {
         return (

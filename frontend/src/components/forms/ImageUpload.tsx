@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { apiFetch, getStoredToken } from "../../lib/api";
+import { getStoredToken } from "../../lib/api";
 
 type Props = {
     value: string | undefined;

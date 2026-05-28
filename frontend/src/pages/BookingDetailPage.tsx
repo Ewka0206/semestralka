@@ -12,15 +12,18 @@ export function BookingDetailPage() {
     const { bookingId } = useParams();
     const nav = useNavigate();
 
-    const [booking, setBooking] = useState<Booking | null | undefined>(undefined);
+    // undefined = načítám, null = nenalezeno
+    const [booking, setBooking] = useState<Booking | null | undefined>(!bookingId ? null : undefined);
     const [trip, setTrip] = useState<Trip | null>(null);
 
     useEffect(() => {
-        if (!bookingId) { setBooking(null); return; }
-        getBookingById(bookingId).then((b) => {
-            setBooking(b);
-            if (b) getTripById(b.tripId).then(setTrip);
-        });
+        if (!bookingId) return;
+        getBookingById(bookingId)
+            .then((b) => {
+                setBooking(b ?? null);
+                if (b) getTripById(b.tripId).then(setTrip);
+            })
+            .catch(() => setBooking(null));
     }, [bookingId]);
 
     if (booking === undefined) return <div className="container stack"><p className="muted">Načítám...</p></div>;

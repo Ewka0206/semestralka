@@ -27,6 +27,7 @@ export function CreateOfferPage() {
         setValue,
         formState: { errors, isSubmitting },
     } = useForm<CreateOfferForm>({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resolver: zodResolver(createOfferSchema) as any,
         defaultValues: {
             title: "",
@@ -121,6 +122,8 @@ export function CreateOfferPage() {
                             <option key={t.code} value={t.code}>{t.label}</option>
                         ))}
                     </select>
+                    {/* errors.type je validní FieldError – cast potlačí generický unions mismatch */}
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <FormError error={errors.type as any} />
                 </label>
 
@@ -163,6 +166,7 @@ export function CreateOfferPage() {
                 <div className="field">
                     <span>Obrázek</span>
                     <ImageUpload
+                        // eslint-disable-next-line react-hooks/incompatible-library
                         value={watch("imageUrl") ?? ""}
                         onChange={(url) => setValue("imageUrl", url)}
                     />

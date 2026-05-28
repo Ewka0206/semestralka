@@ -25,7 +25,11 @@ export function HomePage() {
 
     useEffect(() => {
         fetchTrips(activeFilters);
-    }, [location.key]);  // refresh při každém příchodu na stránku
+        // Záměrné: efekt se spustí jen při navigaci (location.key).
+        // fetchTrips a activeFilters jsou vynechány – handleSearch je volá přímo,
+        // abychom předešli dvojitému fetchi při každém filtrování.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.key]);
 
     function handleSearch() {
         setActiveFilters(draft);

@@ -17,6 +17,8 @@ export function Header() {
     }
 
     useEffect(() => {
+        // Záměrné: zavření hamburger menu při změně routy
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsOpen(false);
     }, [location.pathname]);
 

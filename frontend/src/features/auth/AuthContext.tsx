@@ -36,6 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         window.addEventListener("auth:changed", onAuthChanged);
         window.addEventListener("storage", onStorage);
+        // Záměrné: synchronizace stavu při mount (čtení z localStorage)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         refresh();
 
         return () => {
@@ -55,6 +57,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// Hook je záměrně ve stejném souboru jako AuthProvider (sdílí AuthContext)
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextValue {
     const ctx = useContext(AuthContext);
     if (!ctx) throw new Error("useAuth must be used within <AuthProvider>.");
