@@ -1,28 +1,25 @@
 import type { Trip, TripType } from "./types.ts";
 
 export type TripFiltersState = {
-    q: string;
     type: TripType | "Any";
-    country: string;       // "" = vše, jinak přesný název státu
-    dateFrom: string;      // "" nebo YYYY-MM-DD
-    dateTo: string;        // "" nebo YYYY-MM-DD
+    country: string;        // "" = vše, jinak přesný název státu
+    dateFrom: string;       // "" nebo YYYY-MM-DD
+    dateTo: string;         // "" nebo YYYY-MM-DD
     maxPriceCzk: number | null;
+    minFreeSpots: number | null;
 };
 
 export function defaultTripFilters(): TripFiltersState {
     return {
-        q: "",
         type: "Any",
         country: "",
         dateFrom: "",
         dateTo: "",
         maxPriceCzk: null,
+        minFreeSpots: null,
     };
 }
 
-function includesCI(haystack: string, needle: string) {
-    return haystack.toLowerCase().includes(needle.toLowerCase());
-}
 
 export function formatDateRange(from: string | Date, to: string | Date) {
     const a = new Date(from);
@@ -37,17 +34,6 @@ export function formatDateRange(from: string | Date, to: string | Date) {
 
 export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
     return trips.filter((t) => {
-
-        if (f.q.trim()) {
-            const q = f.q.trim();
-            const ok =
-                includesCI(t.title, q) ||
-                includesCI(t.location, q) ||
-                includesCI(t.country ?? "", q) ||
-                includesCI(t.description ?? "", q) ||
-                includesCI(t.type, q);
-            if (!ok) return false;
-        }
 
         if (f.type !== "Any" && t.type !== f.type) {
             return false;
@@ -71,6 +57,13 @@ export function applyTripFilters(trips: Trip[], f: TripFiltersState): Trip[] {
 
         if (f.maxPriceCzk !== null) {
             if (t.priceCzk > f.maxPriceCzk) {
+                return false;
+            }
+        }
+
+        if (f.minFreeSpots !== null) {
+            const free = t.capacity - (t.booked ?? 0);
+            if (free < f.minFreeSpots) {
                 return false;
             }
         }

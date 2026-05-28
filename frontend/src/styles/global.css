@@ -465,6 +465,10 @@ a.btn { text-decoration: none; }
 .grid2 { display: grid; gap: 14px; }
 @media (min-width: 700px) { .grid2 { grid-template-columns: 1fr 1fr; } }
 
+/* Filter grid — 2 sloupce (stejné jako grid2, pojmenované zvlášť) */
+.filterGrid { display: grid; gap: 14px; }
+@media (min-width: 700px) { .filterGrid { grid-template-columns: 1fr 1fr; } }
+
 /* Filter buttons row — spans both columns */
 .filterBtns {
     grid-column: 1 / -1;
