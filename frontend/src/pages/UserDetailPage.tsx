@@ -93,6 +93,24 @@ export function UserDetailPage() {
                     </div>
                 </div>
             </section>
+
+            {/* ── Propagační sekce pro členy posádky ── */}
+            {user.role === "crew" && (
+                <section className="card stack crewPromo">
+                    <h2 className="dashSectionTitle">Co pro tebe SailConnect nabízí</h2>
+                    <ul className="tripHighlights">
+                        <li>⛵ Výběr z pestré nabídky plaveb (rekreační, tréninkové, dobrodružné)</li>
+                        <li>📋 Snadná správa rezervací na jednom místě</li>
+                        <li>🧭 Přímý kontakt s kapitánem přes rezervaci</li>
+                    </ul>
+                    <div className="crewPromoHint">
+                        <p className="muted">
+                            Chcete nabízet vlastní plavby? V nastavení profilu si změňte roli na Kapitán.
+                        </p>
+                        <Link to="/me/edit" className="btn" style={{ flexShrink: 0 }}>Změnit roli</Link>
+                    </div>
+                </section>
+            )}
         </div>
     );
 }

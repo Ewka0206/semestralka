@@ -345,9 +345,45 @@ Pole `role` je volitelné – pokud chybí, použije se výchozí role `crew`.
 }
 ```
 
-**UserResponse – odpověď serveru**
+**LoginResponse – odpověď na login a register**
 
-Struktura, kterou server vrací z přihlášení, registrace, detailu uživatele i jeho úpravy. Při přihlášení a registraci je odpověď rozšířena o pole `token`.
+Vráceno z `POST /api/auth/login` a `POST /api/auth/register`. Obsahuje JWT token i data uživatele. Je to samostatné Java DTO (`LoginResponse record`), odlišné od `UserResponse`.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "LoginResponse",
+  "type": "object",
+  "properties": {
+    "token":     { "type": "string",                        "description": "JWT Bearer token platný 24 hodin" },
+    "id":        { "type": "string", "format": "uuid",      "description": "UUID uživatele" },
+    "email":     { "type": "string", "format": "email",     "description": "E-mailová adresa" },
+    "name":      { "type": "string",                        "description": "Celé jméno" },
+    "role":      { "type": "string", "enum": ["crew", "captain"], "description": "Role uživatele" },
+    "createdAt": { "type": "string", "format": "date-time", "description": "Datum vytvoření (ISO 8601)" },
+    "updatedAt": { "type": "string", "format": "date-time", "description": "Datum poslední úpravy (ISO 8601)" }
+  },
+  "required": ["token", "id", "email", "name", "role", "createdAt", "updatedAt"]
+}
+```
+
+**Příklad odpovědi (login/register):**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "jan.novak@example.com",
+  "name": "Jan Novák",
+  "role": "captain",
+  "createdAt": "2025-03-01T10:00:00Z",
+  "updatedAt": "2025-03-01T10:00:00Z"
+}
+```
+
+**UserResponse – odpověď na GET/PUT /api/users/{id}**
+
+Vráceno z `GET /api/users/{id}` a `PUT /api/users/{id}`. **Neobsahuje token.**
 
 ```json
 {
@@ -360,24 +396,9 @@ Struktura, kterou server vrací z přihlášení, registrace, detailu uživatele
     "name":      { "type": "string",                        "description": "Celé jméno" },
     "role":      { "type": "string", "enum": ["crew", "captain"], "description": "Role uživatele" },
     "createdAt": { "type": "string", "format": "date-time", "description": "Datum vytvoření (ISO 8601)" },
-    "updatedAt": { "type": "string", "format": "date-time", "description": "Datum poslední úpravy (ISO 8601)" },
-    "token":     { "type": "string",                        "description": "JWT Bearer token (pouze v odpovědi na login/register)" }
+    "updatedAt": { "type": "string", "format": "date-time", "description": "Datum poslední úpravy (ISO 8601)" }
   },
   "required": ["id", "email", "name", "role", "createdAt", "updatedAt"]
-}
-```
-
-**Příklad odpovědi (login/register):**
-
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "email": "jan.novak@example.com",
-  "name": "Jan Novák",
-  "role": "captain",
-  "createdAt": "2025-03-01T10:00:00Z",
-  "updatedAt": "2025-03-01T10:00:00Z",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
 
@@ -696,14 +717,13 @@ Tato kapitola obsahuje slovní popis kroků jednotlivých backend endpointů, se
 
 #### 5.2.1 Úprava uživatele (PUT /api/users/{id})
 
-1. `UserController` ověří JWT token v hlavičce `Authorization`; pokud chybí nebo je neplatný → 401.
-2. Porovná ID uživatele z JWT s `{id}` v URL; pokud se neshodují → 403 Forbidden.
-3. Bean Validation na `UpdateUserRequest` (formát e-mailu, délka hesla atd.).
-4. `AuthService.updateUser()` načte uživatele přes `userRepository.findById(id)`; pokud nenalezen → 404.
-5. Pokud přišel nový e-mail, ověří unikátnost (`findByEmailIgnoreCase`) → 409 při kolizi.
-6. Pokud přišlo nové heslo, zahashuje ho BCryptem.
-7. Aktualizuje pouze přijatá pole, nastaví `updatedAt` na aktuální čas.
-8. `userRepository.save(user)`; vrátí `UserResponse` s HTTP 200.
+1. Spring Security ověří JWT token v hlavičce `Authorization`; pokud chybí nebo je neplatný → 401.
+2. Bean Validation na `UpdateUserRequest` (formát e-mailu, délka hesla atd.).
+3. `AuthService.updateUser()` načte uživatele přes `userRepository.findById(id)`; pokud nenalezen → 404.
+4. Pokud přišel nový e-mail, ověří unikátnost (`findByEmailIgnoreCase`) → 409 při kolizi.
+5. Pokud přišlo nové heslo, zahashuje ho BCryptem.
+6. Aktualizuje pouze přijatá pole, nastaví `updatedAt` na aktuální čas.
+7. `userRepository.save(user)`; vrátí `UserResponse` s HTTP 200.
 
 ### 5.3 Nabídky plaveb
 
@@ -721,9 +741,8 @@ Tato kapitola obsahuje slovní popis kroků jednotlivých backend endpointů, se
 1. Ověření JWT tokenu (jinak 401).
 2. `tripRepository.findById(id)`; pokud nenalezeno → 404.
 3. Kontrola, že `trip.ownerUserId` se shoduje s ID uživatele z JWT; jinak 403 Forbidden.
-4. **PUT:** aktualizace přijatých polí, validace `endDate > startDate`, pokud `capacity` klesne pod `booked` → 400.
-5. **PUT:** `tripRepository.save(trip)`, vrátí `Trip` s 200.
-6. **DELETE:** `tripRepository.deleteById(id)`, upraví `trip.booked` u příslušných plaveb, vrátí 204 No Content.
+4. **PUT:** aktualizace přijatých polí (patch semantika – null pole se ignorují); `tripRepository.save(trip)`, vrátí `Trip` s 200.
+5. **DELETE:** `tripRepository.deleteById(id)`, vrátí 204 No Content.
 
 #### 5.3.3 Seznam a vyhledávání plaveb (GET /api/trips, GET /api/trips/search, GET /api/trips/{id})
 
@@ -735,7 +754,7 @@ Tato kapitola obsahuje slovní popis kroků jednotlivých backend endpointů, se
 
 #### 5.4.1 Vytvoření/aktualizace rezervace (POST /api/bookings)
 
-1. `BookingController` ověří JWT token (jinak 401) a provede Bean Validation na `BookingRequest`.
+1. Spring Security ověří JWT token (jinak 401); `userId` se nastaví z JWT přímo v controlleru (`auth.getName()`).
 2. `BookingService.create()` načte trip přes `tripRepository.findById(tripId)`; pokud nenalezeno → 404.
 3. Zkontroluje, zda uživatel nemá pro danou plavbu existující rezervaci (`findByUserIdAndTripId`):
    - Pokud existuje → **upsert:** aktualizuje `seats` stávající rezervace, přepočítá `trip.booked`.

@@ -100,8 +100,42 @@ Vráceno při chybě (400, 404, 409 apod.).
 
 ---
 
+### LoginResponse
+Vráceno z `POST /api/auth/login` a `POST /api/auth/register`. Obsahuje JWT token + data uživatele.
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12",
+  "$id": "LoginResponse",
+  "type": "object",
+  "properties": {
+    "token":     { "type": "string",                        "description": "JWT Bearer token platný 24 hodin" },
+    "id":        { "type": "string", "format": "uuid",      "description": "UUID uživatele" },
+    "email":     { "type": "string", "format": "email",     "description": "E-mailová adresa" },
+    "name":      { "type": "string",                        "description": "Celé jméno" },
+    "role":      { "type": "string", "enum": ["crew", "captain"], "description": "Role uživatele" },
+    "createdAt": { "type": "string", "format": "date-time", "description": "Datum vytvoření (ISO 8601)" },
+    "updatedAt": { "type": "string", "format": "date-time", "description": "Datum poslední úpravy (ISO 8601)" }
+  },
+  "required": ["token", "id", "email", "name", "role", "createdAt", "updatedAt"]
+}
+```
+
+**Příklad odpovědi:**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "jan.novak@example.com",
+  "name": "Jan Novák",
+  "role": "captain",
+  "createdAt": "2025-03-01T10:00:00Z",
+  "updatedAt": "2025-03-01T10:00:00Z"
+}
+```
+
 ### UserResponse
-Vráceno z `POST /login`, `POST /register`, `GET /api/users/{id}`, `PUT /api/users/{id}`.
+Vráceno z `GET /api/users/{id}` a `PUT /api/users/{id}`. **Neobsahuje token** – pro získání tokenu slouží login/register.
 
 ```json
 {
@@ -134,7 +168,7 @@ Vráceno z `POST /login`, `POST /register`, `GET /api/users/{id}`, `PUT /api/use
 
 | HTTP kód | Popis |
 |----------|-------|
-| 200 OK | Úspěšné přihlášení |
+| 200 OK | Úspěšné přihlášení (login) |
 | 201 Created | Úspěšná registrace |
 | 400 Bad Request | Validační chyba (viz ErrorResponse) |
 | 401 Unauthorized | Neplatné přihlašovací údaje |
@@ -191,7 +225,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
     "title":           { "type": "string", "minLength": 1,                           "description": "Název výletu" },
     "location":        { "type": "string", "minLength": 1,                           "description": "Místo odjezdu / přístav" },
     "country":         { "type": ["string", "null"],                                 "description": "Stát / region" },
-    "type":            { "type": "string", "enum": ["RELAX", "TRAINING", "ADVENTURE"], "description": "Typ plavby (uppercase kód z číselníku /api/trip-types)" },
+    "type":            { "type": "string", "enum": ["RELAX", "ADVENTURE", "TRAINING"], "description": "Typ plavby – uppercase název enum konstanty (RELAX, ADVENTURE, TRAINING); číselník kódů /api/trip-types vrací mixed-case 'Relax', 'Adventure', 'Training'" },
     "startDate":       { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$",     "description": "Datum zahájení (YYYY-MM-DD)" },
     "endDate":         { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$",     "description": "Datum ukončení (YYYY-MM-DD)" },
     "priceCzk":        { "type": "integer", "minimum": 0,                            "description": "Cena v Kč za osobu" },
@@ -213,7 +247,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
   "title": "Španělsko – Costa Brava",
   "location": "Barcelona",
   "country": "Španělsko",
-  "type": "Adventure",
+  "type": "ADVENTURE",
   "startDate": "2025-07-15",
   "endDate": "2025-07-22",
   "priceCzk": 18500,
@@ -232,7 +266,7 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
   "title": "Španělsko – Costa Brava",
   "location": "Barcelona",
   "country": "Španělsko",
-  "type": "Adventure",
+  "type": "ADVENTURE",
   "startDate": "2025-07-15",
   "endDate": "2025-07-22",
   "priceCzk": 18500,
@@ -253,8 +287,8 @@ Všechna pole jsou volitelná – aktualizují se pouze ta, která jsou v požad
 | GET | `/api/trips` | `?owner={userId}` (volitelný) | Vrátí seznam všech plaveb; lze filtrovat podle vlastníka | 200 |
 | GET | `/api/trips/search` | `?q`, `type`, `country`, `dateFrom`, `dateTo`, `maxPrice`, `minFreeSpots`, `page`, `size` | Vyhledávání plaveb s filtry; vrací stránkovaný výsledek (`Page<Trip>`) | 200 |
 | GET | `/api/trips/{id}` | – | Detail jedné plavby | 200, 404 |
-| POST | `/api/trips` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Vytvoří novou plavbu; vlastník se nastaví z JWT | 201, 400, 401, 403 |
-| PUT | `/api/trips/{id}` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Aktualizuje plavbu | 200, 400, 401, 403, 404 |
+| POST | `/api/trips` | `Authorization: Bearer <token>` (✔ CREW+) | Vytvoří novou plavbu; vlastník se nastaví z JWT | 201, 400, 401 |
+| PUT | `/api/trips/{id}` | `Authorization: Bearer <token>` (✔ CREW+) | Aktualizuje plavbu | 200, 400, 401, 404 |
 | DELETE | `/api/trips/{id}` | `Authorization: Bearer <token>` (✔ CAPTAIN) | Smaže plavbu | 204, 401, 403, 404 |
 
 ---

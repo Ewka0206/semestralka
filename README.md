@@ -299,7 +299,8 @@ Složka `docs/` obsahuje podrobnou projektovou dokumentaci:
 | [`docs/uzivatelska_prirucka.md`](docs/uzivatelska_prirucka.md) | Uživatelská příručka – registrace, přihlášení, prohlížení plaveb, rezervace, správa nabídek a profilu |
 | [`docs/administratorska_prirucka.md`](docs/administratorska_prirucka.md) | Administrátorská příručka – instalace, konfigurace, databáze, nasazení do produkce, řešení problémů |
 | [`docs/api_schemas.md`](docs/api_schemas.md) | JSON schémata všech REST API endpointů včetně příkladů požadavků a odpovědí |
-| [`docs/SailConnect_SRS.docx`](docs/SailConnect_SRS.docx) | Specifikace softwarových požadavků (SRS) |
+| [`docs/SailConnect_SRS.md`](docs/SailConnect_SRS.md) | Specifikace softwarových požadavků (SRS) |
+| [`docs/SailConnect_SDD.md`](docs/SailConnect_SDD.md) | Softwarový návrh (SDD) – architektura, databázové schéma, popis API a backend akcí |
 | [`docs/produktovy_list.pdf`](docs/produktovy_list.pdf) | Produktový list aplikace |
 
 ---

@@ -1,7 +1,7 @@
     # Uživatelská příručka – SailConnect
 
-**Verze:** 1.0  
-**Datum:** 2026-05-27  
+**Verze:** 1.1  
+**Datum:** 2026-05-28  
 **Aplikace:** SailConnect – Najdi plavbu nebo posádku  
 **URL aplikace:** `http://localhost:5173` (vývojové prostředí)
 
@@ -18,6 +18,9 @@
 7. [Správa rezervací](#7-správa-rezervací)
 8. [Vytváření a správa vlastních nabídek (Kapitán)](#8-vytváření-a-správa-vlastních-nabídek-kapitán)
 9. [Správa profilu](#9-správa-profilu)
+   - [9.1 Zobrazení profilu](#91-zobrazení-profilu)
+   - [9.2 Úprava profilu](#92-úprava-profilu)
+   - [9.3 Výhody pro členy posádky](#93-výhody-pro-členy-posádky)
 10. [Odhlášení](#10-odhlášení)
 11. [Časté otázky a řešení problémů](#11-časté-otázky-a-řešení-problémů)
 
@@ -251,10 +254,11 @@ Lze změnit:
 
 Klikněte na své **jméno (role)** v navigačním menu nebo přejděte na `/me`.
 
-Zobrazuje:
+Zobrazuje (v tomto pořadí):
 - Inicialový avatar a jméno
 - Tři přehledové karty: **Role** (Člen posádky / Kapitán), **Člen od** (datum registrace), **Dní na palubě**
 - Detailní tabulka: jméno, e-mail, role, datum registrace, datum poslední změny
+- *(pouze Člen posádky)* Propagační sekce s přehledem výhod – na konci stránky, viz [§ 9.3](#93-výhody-pro-členy-posádky)
 
 ### 9.2 Úprava profilu
 
@@ -266,6 +270,16 @@ Zobrazuje:
 3. Klikněte na **Uložit změny** nebo **Zrušit** pro návrat bez uložení.
 
 > ℹ️ Změna hesla v aktuální verzi probíhá přes API; v UI lze změnit jméno, e-mail a roli.
+
+### 9.3 Výhody pro členy posádky
+
+Uživatelům s rolí **Člen posádky** se na konci stránky profilu (pod detailní tabulkou) zobrazuje sekce **Co pro tebe SailConnect nabízí**:
+
+- ⛵ Výběr z pestré nabídky plaveb (rekreační, tréninkové, dobrodružné)
+- 📋 Snadná správa rezervací na jednom místě
+- 🧭 Přímý kontakt s kapitánem přes rezervaci
+
+Kliknutím na tlačítko **Změnit roli** se otevře formulář úpravy profilu, kde stačí přepnout roli na *Kapitán* a uložit změny. Kapitánům se tato sekce nezobrazuje.
 
 ---
 
@@ -298,14 +312,3 @@ Klikněte na tlačítko **Odhlášení** v navigačním menu. Budete odhlášeni
 - Zadali jste neplatnou adresu, nebo odkazovaná plavba / rezervace byla smazána.
 - Klikněte na **Domů** pro návrat na hlavní stránku.
 
----
-
-## 12. Profil posádky (Crew)
-
-Na stránce profilu (`/me`) se uživatelům s rolí **Člen posádky** zobrazuje propagační sekce s přehledem výhod:
-
-- Výběr z pestré nabídky plaveb (rekreační, tréninkové, dobrodružné)
-- Snadná správa rezervací na jednom místě
-- Přímý kontakt s kapitánem přes rezervaci
-
-Chcete nabízet vlastní plavby? V nastavení profilu si změňte roli na **Kapitán**.

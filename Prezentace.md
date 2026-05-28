@@ -174,10 +174,12 @@ ERROR GlobalHandler  -- Neočekávaná chyba: ...
 
 ### 4d. Dokumentace v repozitáři
 ```
-README.md                    – návod ke spuštění, architektura, technologie
-docs/api_schemas.md          – JSON Schema pro všechna API
-docs/uzivatelska_prirucka.md – návod pro uživatele
+README.md                         – návod ke spuštění, architektura, technologie
+docs/api_schemas.md               – JSON Schema pro všechna API
+docs/uzivatelska_prirucka.md      – návod pro uživatele
 docs/administratorska_prirucka.md – návod pro správce
+docs/SailConnect_SRS.md           – Specifikace softwarových požadavků (verze 1.1)
+docs/SailConnect_SDD.md           – Softwarový návrh – architektura, DB schéma, popis API
 ```
 
 ---
@@ -217,5 +219,6 @@ curl -X DELETE http://localhost:8080/api/trips/korfu-2026-06 \
 | Jak funguje stránkování? | `Pageable` parametr v repository, `countQuery` pro `totalElements` |
 | Jak funguje upsert rezervací? | `BookingRepository.findByUserIdAndTripId()` – pokud existuje, update; jinak create; userId vždy z JWT |
 | Jak se aktualizuje `booked`? | `BookingService` je `@Transactional`, při create/delete atomicky mění `trip.booked` v `TripRepository` |
+| Jak se projevuje role v UI? | Crew: vidí propagační sekci s výhodami a tlačítkem **Změnit roli** na stránce profilu `/me`; Kapitán sekci nevidí, ale vidí tlačítko **Vytvořit nabídku** v navigaci |
 | Kde jsou testy? | `backend/src/test/java/com/sailconnect/service/` |
 | Jak spustit? | `cd backend && ./mvnw spring-boot:run` (vyžaduje MariaDB na portu 3306) |

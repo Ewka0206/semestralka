@@ -228,7 +228,8 @@
           ],
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/users/neexistujici-id"
+            "url": "{{baseUrl}}/users/neexistujici-id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
           }
         }
       ]
