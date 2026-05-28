@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { apiFetch } from "../../lib/api";
+import { apiFetch, getStoredToken } from "../../lib/api";
 
 type Props = {
     value: string | undefined;
@@ -20,7 +20,13 @@ export function ImageUpload({ value, onChange }: Props) {
         try {
             const form = new FormData();
             form.append("file", file);
-            const res = await fetch("/api/upload", { method: "POST", body: form });
+            // Content-Type záměrně nenastavujeme – browser doplní multipart/form-data s boundary
+            const token = getStoredToken();
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: form,
+                headers: token ? { "Authorization": `Bearer ${token}` } : {},
+            });
             if (!res.ok) {
                 const data = await res.json().catch(() => ({}));
                 setError(data.error ?? "Nahrávání selhalo.");

@@ -5,10 +5,13 @@ import { TripFilters } from "../features/trips/TripFilters";
 import { TripList } from "../features/trips/TripList";
 import { applyTripFilters, defaultTripFilters } from "../features/trips/utils";
 import { getAllTrips } from "../features/trips/repo";
+import { useAuth } from "../features/auth/AuthContext";
 import type { Trip } from "../features/trips/types";
 
 export function HomePage() {
     usePageTitle("Sail Connect – Najdi plavbu nebo posádku");
+    const { user } = useAuth();
+    const isCaptain = user?.role === "captain";
     const [draft, setDraft] = useState(defaultTripFilters());
     const [applied, setApplied] = useState(defaultTripFilters());
     const [allTrips, setAllTrips] = useState<Trip[]>([]);
@@ -43,13 +46,18 @@ export function HomePage() {
                     </p>
                     <div className="heroActions">
                         <a href="#nabidky" className="btn btnLg">Procházet plavby</a>
-                        <Link to="/offers/new" className="btn btnLg btnOutline">Přidat nabídku</Link>
+                        {isCaptain && (
+                            <Link to="/offers/new" className="btn btnLg btnOutline">Přidat plavbu</Link>
+                        )}
+                        {!user && (
+                            <Link to="/register" className="btn btnLg btnOutline">Registrovat se zdarma</Link>
+                        )}
                     </div>
                 </div>
             </section>
 
             <div className="stack" id="nabidky">
-                <h2 className="sectionTitle">Aktuální nabídky plaveb</h2>
+                <h2 className="sectionTitle">Aktuální plavby</h2>
                 <TripFilters
                     value={draft}
                     onChange={setDraft}

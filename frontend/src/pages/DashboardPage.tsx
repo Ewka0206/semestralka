@@ -6,9 +6,12 @@ import { getBookings, deleteBooking } from "../features/bookings/repo";
 import { getAllTrips, getUserTrips, deleteUserTrip } from "../features/trips/repo";
 import { getCurrentUser } from "../features/auth/repo";
 import { formatDateRange } from "../features/trips/utils";
+import { useAuth } from "../features/auth/AuthContext";
 
 export function DashboardPage() {
     const user = getCurrentUser();
+    const { user: authUser } = useAuth();
+    const isCaptain = authUser?.role === "captain";
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [myOffers, setMyOffers] = useState<Trip[]>([]);
     const [allTrips, setAllTrips] = useState<Trip[]>([]);
@@ -22,7 +25,7 @@ export function DashboardPage() {
     }, []);
 
     async function handleDeleteOffer(tripId: string) {
-        if (!confirm("Opravdu smazat tuto nabídku?")) return;
+        if (!confirm("Opravdu zrušit tuto plavbu?")) return;
         await deleteUserTrip(tripId);
         setMyOffers((prev) => prev.filter((t) => t.id !== tripId));
     }
@@ -93,7 +96,7 @@ export function DashboardPage() {
                                         <Link className="btn" to={`/trips/${b.tripId}`}>Detail</Link>
                                         <Link className="btn" to={`/bookings/${b.id}/edit`}>Upravit</Link>
                                         <button className="btn btnDanger" type="button" onClick={() => handleCancelBooking(b.id)}>
-                                            Zrušit
+                                            Zrušit rezervaci
                                         </button>
                                     </div>
                                 </li>
@@ -103,42 +106,67 @@ export function DashboardPage() {
                 )}
             </section>
 
-            {/* ── Moje plavby ── */}
-            <section className="card stack">
-                <div className="dashSectionHead">
-                    <h2 className="dashSectionTitle">⛵ Moje plavby</h2>
-                    <Link className="btn" to="/offers/new">+ Nová plavba</Link>
-                </div>
-
-                {myOffers.length === 0 ? (
-                    <div className="dashEmpty">
-                        <span className="dashEmptyIcon">🧭</span>
-                        <p>Zatím žádná nabídka plavby.</p>
-                        <Link to="/offers/new" className="btn">Vytvořit první plavbu</Link>
+            {/* ── Moje plavby (jen kapitán) ── */}
+            {isCaptain ? (
+                <section className="card stack">
+                    <div className="dashSectionHead">
+                        <h2 className="dashSectionTitle">⛵ Moje plavby</h2>
+                        <Link className="btn" to="/offers/new">+ Nová plavba</Link>
                     </div>
-                ) : (
-                    <ul className="list">
-                        {myOffers.map((t) => (
-                            <li key={t.id} className="listItem">
-                                <div className="listMain">
-                                    <strong>{t.title}</strong>
-                                    <span className="muted">
-                                        {t.location}{t.country ? ` · ${t.country}` : ""} · {formatDateRange(t.startDate, t.endDate)}
-                                    </span>
-                                    <span className="muted">{t.priceCzk.toLocaleString("cs-CZ")} Kč / os.</span>
-                                </div>
-                                <div className="actionsRow">
-                                    <Link className="btn" to={`/trips/${t.id}`}>Detail</Link>
-                                    <Link className="btn" to={`/offers/${t.id}/edit`}>Upravit</Link>
-                                    <button className="btn btnDanger" type="button" onClick={() => handleDeleteOffer(t.id)}>
-                                        Smazat
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </section>
+
+                    {myOffers.length === 0 ? (
+                        <div className="dashEmpty">
+                            <span className="dashEmptyIcon">🧭</span>
+                            <p>Zatím žádná vlastní plavba.</p>
+                            <Link to="/offers/new" className="btn">Vytvořit první plavbu</Link>
+                        </div>
+                    ) : (
+                        <ul className="list">
+                            {myOffers.map((t) => (
+                                <li key={t.id} className="listItem">
+                                    <img
+                                        src={t.imageUrl ?? "/images/trips/placeholder_800.webp"}
+                                        alt={t.title}
+                                        className="bookingThumb"
+                                    />
+                                    <div className="listMain">
+                                        <strong>{t.title}</strong>
+                                        <span className="muted">
+                                            {t.location}{t.country ? ` · ${t.country}` : ""} · {formatDateRange(t.startDate, t.endDate)}
+                                        </span>
+                                        <span className="muted">{t.priceCzk.toLocaleString("cs-CZ")} Kč / os.</span>
+                                    </div>
+                                    <div className="actionsRow">
+                                        <Link className="btn" to={`/trips/${t.id}`}>Detail</Link>
+                                        <Link className="btn" to={`/offers/${t.id}/edit`}>Upravit</Link>
+                                        <button className="btn btnDanger" type="button" onClick={() => handleDeleteOffer(t.id)}>
+                                            Zrušit plavbu
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            ) : (
+                /* ── Promo pro členy posádky ── */
+                <div className="captainPromo card">
+                    <div className="captainPromoInner">
+                        <div className="captainPromoIcon">⚓</div>
+                        <div className="captainPromoText">
+                            <p className="sectionTitle">Chceš nabízet vlastní plavby?</p>
+                            <h2 className="captainPromoTitle">Staň se kapitánem</h2>
+                            <p className="muted captainPromoSub">
+                                Jako kapitán můžeš přidávat vlastní plavby, spravovat je
+                                a budovat svou posádku. Stačí změnit roli v profilu.
+                            </p>
+                        </div>
+                        <Link to="/me/edit" className="btn btnLg">
+                            Změnit roli na kapitána
+                        </Link>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

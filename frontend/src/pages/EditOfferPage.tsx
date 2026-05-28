@@ -89,7 +89,7 @@ export function EditOfferPage() {
             {/* ── Dekorativní hero pruh ── */}
             <div className="formHeroStrip">
                 <div>
-                    <p className="sectionTitle">Upravit nabídku</p>
+                    <p className="sectionTitle">Upravit plavbu</p>
                     <h1>{trip.title}</h1>
                 </div>
             </div>

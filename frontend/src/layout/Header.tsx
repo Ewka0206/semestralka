@@ -20,6 +20,8 @@ export function Header() {
         setIsOpen(false);
     }, [location.pathname]);
 
+    const isCaptain = user?.role === "captain";
+
     return (
         <header className="header">
             <div className="container headerRow">
@@ -50,13 +52,19 @@ export function Header() {
                         Domů
                     </NavLink>
 
-                    <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
-                        Můj přehled
-                    </NavLink>
+                    {/* Přihlášený uživatel – libovolná role */}
+                    {user && (
+                        <NavLink to="/dashboard" className={({ isActive }) => (isActive ? "active" : "")}>
+                            Můj přehled
+                        </NavLink>
+                    )}
 
-                    <NavLink to="/offers/new" className={({ isActive }) => (isActive ? "active" : "")}>
-                        Vytvořit nabídku
-                    </NavLink>
+                    {/* Pouze kapitán */}
+                    {isCaptain && (
+                        <NavLink to="/offers/new" className={({ isActive }) => (isActive ? "active" : "")}>
+                            Vytvořit plavbu
+                        </NavLink>
+                    )}
 
                     {user ? (
                         <>

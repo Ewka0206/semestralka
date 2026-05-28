@@ -72,7 +72,7 @@ export function CreateOfferPage() {
             const created = await addUserTrip(tripData);
             nav(`/trips/${created.id}`);
         } catch {
-            setApiError("Nepodařilo se uložit nabídku. Zkuste to znovu.");
+            setApiError("Nepodařilo se uložit plavbu. Zkuste to znovu.");
         }
     };
 
@@ -82,7 +82,7 @@ export function CreateOfferPage() {
             {/* ── Dekorativní hero pruh ── */}
             <div className="formHeroStrip">
                 <div>
-                    <p className="sectionTitle">Nová nabídka</p>
+                    <p className="sectionTitle">Nová plavba</p>
                     <h1>Vytvořit plavbu</h1>
                 </div>
             </div>
@@ -164,7 +164,7 @@ export function CreateOfferPage() {
                 {apiError && <p className="formError">{apiError}</p>}
 
                 <button className="btn" type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Ukládám…" : "Uložit nabídku"}
+                    {isSubmitting ? "Ukládám…" : "Uložit plavbu"}
                 </button>
             </form>
         </div>

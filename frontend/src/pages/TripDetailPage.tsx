@@ -53,7 +53,7 @@ export function TripDetailPage() {
 
     async function handleDelete(id: string) {
         if (!isOwnOffer) return;
-        if (!confirm("Opravdu smazat tuto nabídku?")) return;
+        if (!confirm("Opravdu zrušit tuto plavbu?")) return;
         await deleteUserTrip(id);
         nav("/");
     }
@@ -130,7 +130,7 @@ export function TripDetailPage() {
                         <div className="actionsRow">
                             <Link className="btn" to={`/offers/${trip.id}/edit`}>Upravit plavbu</Link>
                             <button className="btn" type="button" onClick={() => handleDelete(trip.id)}>
-                                Smazat plavbu
+                                Zrušit plavbu
                             </button>
                         </div>
                     )}
@@ -141,16 +141,26 @@ export function TripDetailPage() {
             <section className="card stack">
                 <h2>Rezervace</h2>
                 {isOwnOffer ? (
-                    <p className="muted">Tohle je tvoje vlastní nabídka – nemůžeš si ji rezervovat.</p>
+                    <p className="muted">Tohle je tvoje vlastní plavba – nemůžeš si ji rezervovat.</p>
                 ) : done ? (
                     <div className="stack">
                         <p>✓ Rezervace uložena.</p>
                         <Link to="/dashboard" className="btn">Jít na Můj přehled</Link>
                     </div>
                 ) : !user ? (
-                    <div className="stack">
-                        <p className="muted">Pro rezervaci musíš být přihlášen.</p>
-                        <Link to="/login" className="btn">Přihlásit se</Link>
+                    <div className="bookingPromo">
+                        <div className="bookingPromoIcon">⚓</div>
+                        <div className="bookingPromoText">
+                            <p className="bookingPromoTitle">Připoj se k posádce!</p>
+                            <p className="muted bookingPromoSub">
+                                Zaregistruj se zdarma a rezervuj místa na plavbách po celém světě.
+                                Stačí pár kliknutí.
+                            </p>
+                        </div>
+                        <div className="bookingPromoActions">
+                            <Link to={`/register`} className="btn btnLg">Registrovat se zdarma</Link>
+                            <Link to={`/login`} className="btn btnLg btnOutline">Přihlásit se</Link>
+                        </div>
                     </div>
                 ) : (
                     <form className="stack" onSubmit={handleSubmit(onBook)}>

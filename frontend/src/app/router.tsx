@@ -26,24 +26,32 @@ export const router = createBrowserRouter([
         path: "/",
         element: <MainLayout />,
         children: [
+            // Veřejné routy
             { index: true, element: withSuspense(<HomePage />) },
             { path: "trips/:tripId", element: withSuspense(<TripDetailPage />) },
             { path: "login", element: withSuspense(<LoginPage />) },
             { path: "register", element: withSuspense(<RegisterPage />) },
 
+            // Přihlášený uživatel (crew i captain)
             {
                 element: <ProtectedRoute />,
                 children: [
                     { path: "dashboard", element: withSuspense(<DashboardPage />) },
-
-                    { path: "offers/new", element: withSuspense(<CreateOfferPage />) },
-                    { path: "offers/:tripId/edit", element: withSuspense(<EditOfferPage />) },
 
                     { path: "bookings/:bookingId", element: withSuspense(<BookingDetailPage />) },
                     { path: "bookings/:bookingId/edit", element: withSuspense(<EditBookingPage />) },
 
                     { path: "me", element: withSuspense(<UserDetailPage />) },
                     { path: "me/edit", element: withSuspense(<EditUserPage />) },
+                ],
+            },
+
+            // Pouze kapitán
+            {
+                element: <ProtectedRoute requiredRole="captain" />,
+                children: [
+                    { path: "offers/new", element: withSuspense(<CreateOfferPage />) },
+                    { path: "offers/:tripId/edit", element: withSuspense(<EditOfferPage />) },
                 ],
             },
 

@@ -25,7 +25,7 @@ export function TripFilters({ value, onChange, onSearch, onReset }: Props) {
             <form
                 className="grid2"
                 role="search"
-                aria-label="Filtrování nabídky plaveb"
+                aria-label="Filtrování plaveb"
                 onSubmit={(e) => { e.preventDefault(); onSearch(); }}
             >
                 <div className="field">
